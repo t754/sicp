@@ -1,0 +1,234 @@
+slime doc おぼえがき
+もしかして [[http://d.hatena.ne.jp/patterson/20080823/1219498651][このLINK]] で十分だった?
+
+* 実行系コマンド
+  info 3.2
+
+** C-x C-e or C-M-x
+
+   *よく使う* C-x C-e は,括弧の後ろで使うとs式が評価される.
+
+   C-M-x は 'defvar' のようにあつかう.
+   それゆえ, 変数とかを再度定義すると, debug しにくくなる
+
+** C-:
+   mini buffer で実行
+
+** 選択→ C-c C-r
+   選択部分 を 実行
+
+** C-c C-p
+   新規 の バッファ に表示する系 実行
+
+** C-c E
+   評価するS式 を edit buffer で 編集できるようにするらしい.
+   その後 'C-c C-c' するらしい?
+
+** C-x C-e
+   なんか動かないので skip
+
+** C-c C-u
+   未定義にさせる
+
+* compile 系
+  info 3.3
+
+** C-c C-c
+
+   コンパイルしてみる.
+   コマンドの頭(prefix)に 以下をつけると 挙動が変わる.
+
+   - C-u :: デバック セッティング でやるらしい.
+   - C-- :: speed 重視 compile
+
+** C-c C-k
+   file を コンパイル & load する.
+   コンパイルが通ったら, ファイルをロードする.
+
+   あとは [[*C-c C-c][C-c C-c]] の prefixと同じ
+
+   # M-x org-stored-link → C-c C-l のコンボは使える
+
+** C-c M-k
+   file を コンパイル だけする.
+
+** C-c C-l
+   file をロードするだけ.
+
+** M-n , M-p
+   コンパイル で エラーor警告 のところへ jump
+
+* complete
+  補完
+** M-TAB
+   つまり C-M-i
+   なんかすげぇ補完
+
+* 定義jump
+** M-.
+   カーソルポイント上のsymbol にjump.
+
+** M-,
+   M-. した後に戻る.
+   history の stack を pop してる
+
+** C-x 4 . or C-x 5 .
+   大体 M-.
+   ただし 数字での違いは以下
+
+   - 4 :: 違うwindow で
+   - 5 :: 違うframe で
+
+   5にすると,新しいemacsが開いたように見えるやつ.
+
+* document 読む系
+** SPC
+   大体SPC, 関数のargList見せるやつもこれ (lookup).
+
+** C-c C-d d
+   symbol の 詳細を見る
+
+** C-c C-d f
+   function の 詳細を見る
+
+** C-c C-d A (slime-apropos)
+   symbol を 検索する.
+   つかえる
+   検索はregex (正規表現) 使えるのですばらしい.
+   prefix つけてやれば, 特定のpackage のみ検索らしい
+
+** C-c C-d z
+   [[*C-c C-d A (slime-apropos)][C-c C-d A]] とほぼ同じ. (+all)
+
+   しかし,デフォルトの全部のpackage をsearch するらしい.
+
+** C-c C-d h
+   なんとpointer上の symbol のドキュメントを web で読める!!!
+   つかえる!
+   サイトは Common Lisp Hyperspec. 最高.
+
+** C-c C-d ~
+   format コマンドでの
+   _format character_ をweb検索する.
+   _format character_ とは, C で言えば printf の %d , %lf とか
+
+** C-c C-d #
+   _reader macro_ をweb検索する.
+   インスタント黒魔術 できる.
+
+* Cross-reference commands
+  info 3.7
+  他の方法で 定義とか,外部参照にjump
+** xref
+   Xref が  リファレンス してくれてるそう
+
+*** C-c C-w c
+    slime-who-calls
+    呼び出し元の関数を表示します
+
+*** C-c C-w r
+    slime-who-references
+    グローバル変数への参照を表示します
+
+*** C-c C-w b
+    slime-who-binds
+    グローバル変数の束縛を表示します
+
+*** C-c C-w s
+    slime-who-sets
+    グローバル変数への値の設定を表示します
+
+*** C-c C-w m
+    slime-who-macroexpands
+    マクロ展開個所を表示します
+
+*** M-x slime-who-specializes
+    あるクラスに特定化されるすべてのメソッドを表示します
+
+*** C-c (< or >)
+    コールバックを発見するため,低レベルからさがすやつ
+    これのほうがつかいやすそう
+
+* Macro 展開
+** C-c C-m
+   1回展開してみる
+
+** C-c M-m
+   全て展開
+
+* DisAssembly
+  アセンブリ化 する?
+
+** C-c M-d
+   関数 → アセンブリ
+
+** C-c C-t
+   読む気力ない
+   Toggle tracing of the function at point.  If invoked with a prefix
+   argument, read additional information, like which particular method
+   should be traced.
+
+* Abort Recovery
+
+** C-c C-b
+   send SIGINT
+
+** C-c ~
+   今いるpackage の workingDirectory を見せる
+
+** C-c M-p
+   repl に 今いるpackage をSet
+
+** slime-cd,slime-pwd
+   slime の cd,pwd
+
+* inspector
+
+  エラーのやつとかに やってみると 詳しく出るやつみたい
+
+** C-c I
+   inspect する
+   inspect の操作は以下
+
+*** RET
+    value 上であれば,値を呼び出す
+
+*** d
+    describe
+    詳細を説明だす
+
+*** e
+    eval
+
+*** v
+    toggle-verbose する?
+
+*** l
+    戻る (対RET)
+
+*** n
+    戻るを戻す (対l)
+
+*** g
+    reload
+
+*** q
+    quit
+
+*** p
+    pprint
+
+*** .
+    show-source
+
+*** >
+    gotoend?
+
+*** M-RET
+    repl に送る?
+
+*** TAB,S-TAB
+    選択できるやつ 次,前
+
+
+* 今日はここまで

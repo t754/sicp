@@ -1,0 +1,24 @@
+このファイル には, scheme → common lisp する際のメモを書く
+
+* define
+  定義できるものが 関数,変数 である.
+  そのため
+
+  - 変数 :: defvar,defparameter
+  - 関数 :: defun
+
+  とかになる.
+* cond
+
+#+BEGIN_SRC lisp
+(cond ((a? aa) a)
+      ...
+      (else xxx))
+#+END_SRC
+
+else → t
+
+* 関数を返すとき
+(symbol-funciton 'func)
+* 関数を適応
+(funcall )
