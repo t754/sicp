@@ -1,0 +1,22 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:t todo:t |:t
+#+TITLE: README
+#+AUTHOR: tamakoron
+#+EMAIL: tamakoron7@gmail.com
+#+LANGUAGE: ja-JP
+#+SELECT_TAGS: exportn
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 25.0.50.4 (Org mode 8.3.3)
+
+
+* これは何?
+
+  SICP の問題を commonlisp 書いたもの.
+  環境は, emacs + sbcl で書いていく.
+
+  適宜 メモ
+  - scheme2commonlisp.org :: sheme で 互換の無い関数をかく
+  - slimeMemo.org :: slime の emacs info 軽くまとめる
