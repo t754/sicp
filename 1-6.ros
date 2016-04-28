@@ -1,26 +1,21 @@
-(defpackage sicp
-  (:use :common-lisp)
-  (:export #:square
-           #:average
-           #:improve
-           #:good-enough?
-           #:sqrt)
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-6.3670852830
+  (:use :cl)
   (:shadow #:sqrt))
-
-(in-package :sicp)
+(in-package :ros.script.1-6.3670852830)
 
 (defun new-if (predicate then-clause else-clause)
   (cond (predicate then-clause)
         (t else-clause)))
-
 ;; ↑ 引数評価されて,無限再帰に陥る
 ;; ↓ 引数評価されない ちゃんと収縮する
-
 (defmacro new2-if (a b d)
   `(cond (,a ,b)
          (t ,d)))
-
-
 
 (defun sqrt-iter (guess x)
   (new2-if (good-enough? guess x)
@@ -40,3 +35,9 @@
 
 (defun sqrt (x)
   (sqrt-iter 1.0 x))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (loop for x in '(1 2 3 4 99)
+     do (format t "~& sqrt(~g) = ~g ~%" x (sqrt x))))
+;;; vim: set ft=lisp lisp:
