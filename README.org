@@ -7,7 +7,7 @@
 #+AUTHOR: tamakoron
 #+EMAIL: tamakoron7@gmail.com
 #+LANGUAGE: ja-JP
-#+SELECT_TAGS: exportn
+#+SELECT_TAGS: export
 #+EXCLUDE_TAGS: noexport
 #+CREATOR: Emacs 25.0.50.4 (Org mode 8.3.3)
 
