@@ -1,24 +1,13 @@
-(defun my/sqrt-iter (guess x)
-  (new2-if (my/good-enough? guess x)
-      guess
-      (my/sqrt-iter (my/improve guess x)
-                    x)))
+(defpackage sicp
+  (:use :common-lisp)
+  (:export #:square
+           #:average
+           #:improve
+           #:good-enough?
+           #:sqrt)
+  (:shadow #:sqrt))
 
-(defun my/improve (guess x)
-  (my/average guess (/ x guess)))
-
-(defun my/average (x y)
-  (/ (+ x y) 2))
-
-(defun my/good-enough? (guess x)
-  (< (abs (- (my/square guess) x)) 0.001))
-
-(defun my/square (x)
-  (* x x))
-
-(defun my/sqrt (x)
-  (my/sqrt-iter 1.0 x))
-
+(in-package :sicp)
 
 (defun new-if (predicate then-clause else-clause)
   (cond (predicate then-clause)
@@ -30,3 +19,24 @@
 (defmacro new2-if (a b d)
   `(cond (,a ,b)
          (t ,d)))
+
+
+
+(defun sqrt-iter (guess x)
+  (new2-if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve guess x)
+                    x)))
+(defun improve (guess x)
+  (average guess (/ x guess)))
+
+(defun average (x y)
+  (/ (+ x y) 2))
+
+(defun good-enough? (guess x)
+  (< (abs (- (square guess) x)) 0.001))
+(defun square (x)
+  (* x x))
+
+(defun sqrt (x)
+  (sqrt-iter 1.0 x))
