@@ -1,0 +1,44 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-8.3670922036
+  (:use :cl)
+  (:shadow :sqrt))
+(in-package :ros.script.1-8.3670922036)
+
+(defun square (x)
+  (* x x))
+(defun average (x y)
+  (/ (+ x y) 2))
+
+;;; 平行根 :: (x/y     + y )/2
+;;; 立方根 :: (x/(y^2) + 2y)/3
+(defun improve (guess x)
+  (average guess (/ x guess)))
+
+(defun improve4cubicroot (y x)
+  (/ (+ (/ x (square y)) (* 2 y)) 3))
+
+(defparameter *f-buffer*
+  (let ((n 0) (tmp 0))
+    #'(lambda (x) (setf tmp n) (setf n x) tmp)))
+
+(defun good-enough? (guess x)
+  (< (abs (- (funcall *f-buffer* guess) guess)) 0.0005))
+
+(defun sqrt-iter (guess x)
+  (if (good-enough? guess x)
+      guess
+      (sqrt-iter (improve4cubicroot guess x)
+                 x)))
+(defun sqrt (x)
+  (sqrt-iter 1.0 x))
+
+(defun main (s-exp &rest argv)
+  (declare (ignorable argv))
+  (let ((x (eval (read-from-string s-exp))))
+    (format t "cubic root(~g) = ~g ~%" x (sqrt x))))
+
+;;; vim: set ft=lisp lisp:
