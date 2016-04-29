@@ -1,0 +1,71 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+
+
+(defpackage :ros.script.1-7.3670852069
+  (:use :cl)
+  (:shadow :sqrt))
+(in-package :ros.script.1-7.3670852069)
+
+
+
+(defun square (x)
+  (* x x))
+(defun average (x y)
+  (/ (+ x y) 2))
+
+(defun improve (guess x)
+  (average guess (/ x guess)))
+
+
+(defun good-enough? (guess x)
+  (< (abs (- (square guess) x)) 0.001))
+
+
+(defun good-SUPER-enough? (guess x)
+  (< (abs (- guess (improve guess x))) 0.001))
+
+(defparameter *enough-toggle* nil)
+
+(defun enough-selector? ()
+  (if *enough-toggle* #'good-enough? #'good-super-enough?))
+
+
+(defun sqrt-iter (guess x)
+  (if (funcall (enough-selector?) guess x)
+      guess
+      (sqrt-iter (improve guess x)
+                 x)))
+
+(defun sqrt (x)
+  (sqrt-iter 1.0 x))
+
+(defun fail-good-enough-print (x)
+    "
+good-enough? だとうまくいかない例をあらわすため
+自作sqrt と 組み込みsqrt &  それらの差 をあらわす
+     "
+    (let ((mySqrt   (sqrt x))
+          (trueSqrt (cl:sqrt x)))
+      (format t "my sqrt: ~G build-in sqrt: ~G (diff ~G) ~%"
+              mysqrt truesqrt (abs (- mySqrt trueSqrt)))))
+
+(defun main (s-exp &rest argv)
+  (declare (ignorable argv))
+  (let ((x (eval (read-from-string s-exp))))
+    (format t "new ")
+    (fail-good-enough-print x)
+
+    (format t "old ")
+    (setq *enough-toggle* (not *enough-toggle*))
+    (fail-good-enough-print x)))
+
+;;; コマンドライン引数を
+;;; 0.00021 (小さい数)
+;;; 1.e7    (大きい数) とかで実行
+;;;
+
+;;; vim: set ft=lisp lisp:
