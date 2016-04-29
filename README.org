@@ -15,8 +15,17 @@
 * これは何?
 
   SICP の問題を commonlisp 書いたもの.
-  環境は, emacs + sbcl で書いていく.
 
-  適宜 メモ
+** 構成
   - scheme2commonlisp.org :: sheme で 互換の無い関数をかく
   - slimeMemo.org :: slime の emacs info 軽くまとめる
+  - *.lisp or *.ros :: ソースファイル
+  - README.org :: このファイル自身
+
+** 環境
+   環境は, emacs + sbcl で書いていく.
+   また,roswellで 管理していく.
+
+* TODO いつかする
+  - ファイルを全て roswell形式にしたい.
+  - 違うファイルから同じ関数を使用している. どうにか参照できるようにしたい
