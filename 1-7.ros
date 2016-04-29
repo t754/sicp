@@ -10,8 +10,6 @@ exec ros -Q -- $0 "$@"
   (:shadow :sqrt))
 (in-package :ros.script.1-7.3670852069)
 
-
-
 (defun square (x)
   (* x x))
 (defun average (x y)
@@ -24,9 +22,12 @@ exec ros -Q -- $0 "$@"
 (defun good-enough? (guess x)
   (< (abs (- (square guess) x)) 0.001))
 
-
+(defparameter *f-buffer*
+  (let ((n 0) (tmp 0))
+    #'(lambda (x) (setf tmp n) (setf n x) tmp)))
 (defun good-SUPER-enough? (guess x)
-  (< (abs (- guess (improve guess x))) 0.001))
+  (< (abs (- (funcall *f-buffer* guess) guess)) 0.001))
+  ;; (< (abs (- guess (improve guess x))) 0.001))
 
 (defparameter *enough-toggle* nil)
 
