@@ -49,5 +49,13 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  )
+  (let ((a1 '(add1 4 5))
+        (a2 '(add2 4 5)))
+    (trace add1)
+    (trace add2)
+    (mapc #'(lambda (x)
+              (format t "~S => ~S ~%" x (eval x)))
+          (list a1 a2))
+    (untrace add1)
+    (untrace add2)))
 ;;; vim: set ft=lisp lisp:
