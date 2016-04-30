@@ -1,0 +1,53 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-9.ros.3670933678
+  (:use :cl))
+(in-package :ros.script.1-9.ros.3670933678)
+
+;;; for scheme
+;; (define (+ a b)
+;;   (if (= a 0) b (inc (+ (dec a) b)))) ;;; ← add1
+;;
+;; (define (+ a b)
+;;   (if (= a 0) b (+ (dec a) (inc b)))) ;;; ← add2
+
+(defun inc (a)
+  (+ a 1))
+(defun dec (a)
+  (- a 1))
+
+(defun add1 (a b)
+  (if (= a 0) b (inc (add1 (dec a) b))))
+(defun add2 (a b)
+  (if (= a 0) b (add2 (dec a) (inc b))))
+
+
+
+;;
+;; 展開すると 以下のような感じになるはず
+
+;; add1 の場合
+;;   (add1 4 5)
+;;   (inc (add1 3 5))
+;;   (inc (inc (add1 2 5)))
+;;   (inc (inc (inc (add1 1 5))))
+;;   (inc (inc (inc (inc 5))))
+;;   9
+
+;; add2 の場合
+;;   (add2 4 5)
+;;   (add2 3 6)
+;;   (add2 2 7)
+;;   (add2 1 8)
+;;   (add2 0 9)
+;;   9
+
+;; よって add1 が 再帰, add2 が反復 のプロセス
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  )
+;;; vim: set ft=lisp lisp:
