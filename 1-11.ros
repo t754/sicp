@@ -1,0 +1,42 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-11.3671025198
+  (:use :cl))
+(in-package :ros.script.1-11.3671025198)
+
+(defun f (n)
+  "再帰プロセス
+n                            if n <  3
+f(n-1) + 2*f(n-2) + 3*f(n-3) if n >= 3
+  "
+  (cond
+    ((< n 3) n)
+    (t (+ (f (- n 1))
+          (* 2 (f (- n 2)))
+          (* 3 (f (- n 3)))))))
+
+
+(defun ff-iter (a b c count)
+  (if (>= 0 count)
+      (+ a (* 2 b) (* 3 c))
+      (ff-iter (+ a (* 2 b) (* 3 c)) a b  (1- count))))
+
+(defun ff (n)
+  "反復プロセス
+n                            if n <  3
+f(n-1) + 2*f(n-2) + 3*f(n-3) if n >= 3
+  "
+  (cond
+    ((< n 3) n)
+    (t (ff-iter 2 1 0 (- n 3)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (mapc #'(lambda (n)
+            (format t "x= ~d 再帰= ~g  反復= ~g ~%" n (f n) (ff n)))
+        '(1 2 3 4 5 6 7 8 9)))
+
+;;; vim: set ft=lisp lisp:
