@@ -1,0 +1,46 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-10.3671019942
+  (:use :cl))
+(in-package :ros.script.1-10.3671019942)
+
+(defun A (x y)
+  (cond ((= y 0) 0)
+        ((= x 0) (* 2 y))
+        ((= y 1) 2)
+        (t (A (- x 1)
+              (A x (- y 1))))))
+
+(defun f (n)
+  "f(n) = 2n"
+  (A 0 n))
+
+(defun g (n)
+  "g(n) = 2^n"
+  (A 1 n))
+
+(defun h (n)
+  "
+h(0) = 0
+h(1) = 2
+h(n) = h(n-1)^h(n-1) if n >= 2
+"
+  (A 2 n))
+
+(defun k (n)
+  "k(n) = 5(n^2)"
+  (* 5 n n))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((func-lis '((A 1 10)
+                    (A 2 4)
+                    (A 3 3))))
+    (mapc #'(lambda (x)
+              (format t "~S => ~S ~%" x (eval x)))
+          func-lis)))
+
+;;; vim: set ft=lisp lisp:
