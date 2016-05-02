@@ -1,0 +1,30 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-12.3671169290
+  (:use :cl))
+(in-package :ros.script.1-12.3671169290)
+
+(defun adjacent-plus (lis)
+  "list内の要素がa b c ってあれば (a+b) (b+c) ってするの返す"
+  (if (eq (cdr lis) nil)
+      nil
+      (cons (+ (car lis)
+             (cadr lis))
+             (adjacent-plus (cdr lis)))))
+
+(defun pascal-iter (lis count)
+  (if (>= 0 count)
+      lis
+      (pascal-iter (adjacent-plus (append '(0) lis '(0)))
+                   (1- count))))
+
+(defun pascal-triangle (count)
+  (pascal-iter '(1) count))
+
+(defun main (x &rest argv)
+  (declare (ignorable argv))
+  (format t "row:~D ~S ~%" x (pascal-triangle (parse-integer x))))
+;;; vim: set ft=lisp lisp:
