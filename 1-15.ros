@@ -1,0 +1,46 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-15.3671275571
+  (:use :cl))
+(in-package :ros.script.1-15.3671275571)
+(defvar *call-count* 0)
+(defvar *p* 0)
+(defun cube (x)
+  (* x x x))
+
+(defun p (x)
+  (- (* 3 x) (* 4 (cube x))))
+
+(defun sine (angle)
+  (if (not (> (abs angle ) 0.1))
+      angle
+      (p (sine (/ angle 3.0)))))
+
+(defun count-sub (str pat)
+  (loop with z = 0 with s = 0 while s do
+	(when (setf s (search pat str :start2 s))
+	  (incf z) (incf s (length pat)))
+	finally (return z)))
+
+(defun my-sine (xx)
+  (format t "P-count:~S~%"
+          (count-sub
+           (with-output-to-string (*trace-output*)
+             (format t "Result: ~S     => ~G ~%" xx (sine xx)))
+           "returned")))
+
+;;; + a. sine 12.15 は 5回
+;;; + b. (sine a) が
+;;;   + 使用する空間は Θ(n)
+;;;   * ステップ数の増加のオーダは Θ(log3(n))
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (trace p)
+  (my-sine 12.15)
+  ;; (let ((xx (append '(12.15) (range 400 ))))
+  ;;   (mapc #'(lambda (x) (ffff x)) xx))
+  (untrace p))
+;;; vim: set ft=lisp lisp:
