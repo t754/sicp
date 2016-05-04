@@ -43,6 +43,7 @@
    \end{equation}
 
    \begin{equation}
+   \label{eq:phi}
    \phi^2 = \phi + 1
    \end{equation}
 
@@ -53,14 +54,17 @@
 
 ** 事前準備
 
+   \begin{equation}
    \begin{align*}
    \psi^2 &= (\frac{1-\sqrt{5}}{2})^2 \\
    &= \frac{1-2\sqrt{5}+5}{4} \\
    &= \frac{3-\sqrt{5}}{2} \\
    &= \psi + 1
    \end{align*}
+   \end{equation}
 
    \begin{equation}
+   \label{eq:psi}
    \psi^2 = \psi + 1
    \end{equation}
 
@@ -83,6 +87,7 @@
     \begin{align*}
     Fib(k) + Fib(k-1) &= \frac{\phi^k - \psi^k}{\sqrt{5}} + \frac{\phi^{k-1} - \psi^{k-1}}{\sqrt{5}} \\
     &= \frac{1}{\sqrt{5}} \{ \phi^{k-1}(\phi + 1) - \psi^{k-1}(\psi + 1) \} \\
+    式\ref{eq:phi},\ref{eq:psi}より \\
     &= \frac{1}{\sqrt{5}} \{ \phi^{k-1} \phi^2    - \psi^{k-1} \psi^2  \} \\
     &= \frac{\phi^{k+1}     - \psi^{k+1}  }{\sqrt{5}} \\
     \end{align*}
