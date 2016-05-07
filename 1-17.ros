@@ -1,0 +1,45 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-17.3671624147
+  (:use :cl)
+  (:shadow *))
+(in-package :ros.script.1-17.3671624147)
+;; ここファイルは + と - しかできない言語と仮定する
+
+(defun * (a b)
+    (if (= b 0)
+        0
+        (+ a (* a (- b 1)))))
+
+(defun double (n)
+  "整数を倍にする"
+  (+ n n))
+
+(defun halve-iter (n count)
+  (let ((x (- n 2)))
+    (if (< x 0)
+        count
+        (halve-iter x (+ 1 count)))))
+(defun halve (n)
+  "n を2で割る"
+  (halve-iter n 0))
+
+(defun fast-* (a b)
+  "a*b の対数的ステップ"
+  (cond ((or (= a 0) (= b 0))
+         0)
+        ((= b (double (halve b))) ;bが偶数の場合
+         (double (fast-* a (halve b))))
+        (t (+ a (fast-* a (- b 1))))))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (trace fast-*)
+  (trace *)
+  (format t "old* ~D~%" (* 7 10))
+  (format t "new* ~D~%" (fast-* 7 10)))
+;;; vim: set ft=lisp lisp:
