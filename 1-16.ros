@@ -1,0 +1,44 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-16.3671599595 (:use :cl))
+(in-package :ros.script.1-16.3671599595)
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun square(n)
+  (* n n))
+
+(defun  fast-expt (b n)
+  (cond ((= n 0) 1)
+        ((even? n)
+         (square (fast-expt b (/ n 2))))
+        (t         (* b (fast-expt b (- n 1))))))
+
+
+(defun  expt-1-16 (a b n)
+  "a*b^n"
+  (cond ((= n 0) a)
+        ((even? n)  (expt-1-16 a (square b)
+                               (/ n 2)))
+        (t          (expt-1-16 (* a b) b (- n 1)))))
+
+
+;;;; fast-expt と 同じような
+;;;; (b^{n/2})^2 = (b^2)^{n/2}
+;;;; 指数n 基数b 追加状態変数a
+;;;; a*b^n が各状態 を一定のような 状態変換を提示する
+
+
+(defun main (x y z &rest argv)
+  "x*y^z"
+  (declare (ignorable argv))
+  (let ((a (read-from-string x))
+        (b (read-from-string y))
+        (c (read-from-string z)))
+    (format t "myexpt ~D*~D^~D = ~D ~%buildin expt (* a (expt b c)) = ~D~%"
+            a b c (expt-1-16 a b c) (* a (expt b c)))))
+;;; vim: set ft=lisp lisp:
