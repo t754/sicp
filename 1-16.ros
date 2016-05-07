@@ -19,12 +19,12 @@ exec ros -Q -- $0 "$@"
         (t         (* b (fast-expt b (- n 1))))))
 
 
-(defun  expt-1-16 (a b n)
+(defun  myexpt (a b n)
   "a*b^n"
   (cond ((= n 0) a)
-        ((even? n)  (expt-1-16 a (square b)
+        ((even? n)  (myexpt a (square b)
                                (/ n 2)))
-        (t          (expt-1-16 (* a b) b (- n 1)))))
+        (t          (myexpt (* a b) b (- n 1)))))
 
 
 ;;;; fast-expt と 同じような
@@ -40,5 +40,5 @@ exec ros -Q -- $0 "$@"
         (b (read-from-string y))
         (c (read-from-string z)))
     (format t "myexpt ~D*~D^~D = ~D ~%buildin expt (* a (expt b c)) = ~D~%"
-            a b c (expt-1-16 a b c) (* a (expt b c)))))
+            a b c (myexpt a b c) (* a (expt b c)))))
 ;;; vim: set ft=lisp lisp:
