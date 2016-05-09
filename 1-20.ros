@@ -1,0 +1,36 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-20.3671799437
+  (:use :cl)
+  (:shadow :gcd))
+(in-package :ros.script.1-20.3671799437)
+
+(defun gcd (a b)
+  (if (= b 0)
+      a
+      (gcd b (rem a b))))
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (trace gcd)
+  (gcd 206 40))
+
+;; プロセス図
+;; 0: (GCD 206 40)
+;;   1: (GCD 40 6)
+;;     2: (GCD 6 4)
+;;       3: (GCD 4 2)
+;;         4: (GCD 2 0)
+
+;; remainder評価回数
+;; 正規順序 :: 4回
+;; 作用的順序 :: 5回
+;;
+;;;; 最後(GCD 2 0) の際に
+;;;;     0←(rem 4 2)を評価する場合5回
+;;;;     しない時4回
+;;;; 作用的順序 は 引数を全て評価してから答えをだすため
+
+;;; vim: set ft=lisp lisp:
