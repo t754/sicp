@@ -1,0 +1,40 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-19.3671796797
+  (:use :cl))
+(in-package :ros.script.1-19.3671796797)
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun fib-iter(a b p q count)
+  (cond ((= count 0) b)
+        ((even? count)
+         (fib-iter a
+                   b
+                   (+ (* q q) (* p p)) ;p'
+                   (+ (* q q) (* 2 q p)) ;q'
+                   (/ count 2)))
+        (t
+         (fib-iter (+ (* b q) (* a q) (* a p))
+                   (+ (* b p) (* a q))
+                   p
+                   q
+                   (- count 1)))))
+(defun fib (n)
+  (fib-iter 1 0 0 1 n))
+;; a' <- aq + bq + ap = a(p+q) + bq
+;; b' <- aq + bp
+
+;; b'' = a'q + b'p
+;;     = (aqq + bqq + aqp) + (aqp + bpp)
+;;     = a(qq + 2qp) + b (qq + pp)
+;;     = aq' +  bp'
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (mapc (lambda (x) (format t "~D " (fib x))) '(0 1 2 3 4 5 6 7 8 9)))
+;;; vim: set ft=lisp lisp:
