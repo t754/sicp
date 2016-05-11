@@ -1,6 +1,7 @@
 このファイル には, scheme → common lisp する際のメモを書く
 
 * define
+
   定義できるものが 関数,変数 である.
   そのため
 
@@ -8,17 +9,66 @@
   - 関数 :: defun
 
   とかになる.
+
 * cond
 
-#+BEGIN_SRC lisp
-(cond ((a? aa) a)
-      ...
-      (else xxx))
-#+END_SRC
+  #+BEGIN_SRC lisp
+  (cond ((a? aa) a)
+         ...
+        (else xxx))
+  #+END_SRC
 
-else → t
+  else → t
 
-* 関数を返すとき
-(symbol-funciton 'func)
-* 関数を適応
-(funcall )
+  else は無いので t としておく.
+
+* 関数系
+
+** 関数を返すとき
+
+  symbol-funciton は引数の関数の実体を返す.
+
+  schemeでは
+  #+BEGIN_SRC lisp
+  (if val '+ '-)
+  #+END_SRC
+
+  とできたが,
+  commonLispでは
+
+  #+BEGIN_SRC lisp
+  (if val (symbol-funciton '+) (symbol-funciton '+) )
+  #+END_SRC
+
+** 関数を適応
+
+   関数の実体を実行する場合,以下が必要
+   (funcall )
+
+
+* ネーミング
+
+  だいたいscheme のほうがよさげ
+
+** 真偽を返す関数
+
+   - scheme     :: 末尾に'?' , ex: symbol?
+   - commonlisp :: 末尾に'p' , ex: symbolp
+
+** 型を変更
+
+   たとえば, string → int
+
+   - scheme     ::  string->int
+   - commonlisp ::  parse-integer
+
+** グローバルな変数
+
+   - scheme :: none
+   - commonlisp :: *var*
+
+* 参考
+
+** lispの方言間の違い
+
+   http://hyperpolyglot.org/lisp (schemeの代わりにracket)
