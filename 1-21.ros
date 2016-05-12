@@ -1,0 +1,26 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| 問2.1 http://sicp.iijlab.net/fulltext/x126.html
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-21.3671959035
+  (:use :cl))
+(in-package :ros.script.1-21.3671959035)
+
+(defun divides? (a b)
+  (= (rem b a) 0))
+
+(defun square (x) (* x x))
+
+(defun find-divisor (n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor )
+          (t (find-divisor n (+ test-divisor 1)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (format t "~D ~%"
+          (min (find-divisor 199 2)
+               (find-divisor 1999 2)
+               (find-divisor 19999 2))))
+;;; vim: set ft=lisp lisp:
