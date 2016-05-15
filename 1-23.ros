@@ -1,0 +1,75 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-23.3672245860
+  (:use :cl))
+(in-package :ros.script.1-23.3672245860)
+(defun divides? (a b)
+  (= (rem b a) 0))
+
+(defun square (x) (* x x))
+
+(defun next (n)
+  "入力が 2であれば 3 を返し、そうでなければ入力に 2 を足したものを返す手続き"
+  (if (= n 2)
+      3
+      (+ 2 n)))
+
+(defun find-divisor (n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor )
+          (t (find-divisor n (next test-divisor )))))
+
+(defun smallest-divisor (n)
+  (find-divisor n 2))
+
+
+(defun prime? (n)
+  (= n (smallest-divisor n)))
+
+(defun timed-prime-test (n)
+  (print "")
+  (print n)
+  (time  ; get-internal-run-time だと分解能がなさすぎるので timeをついか
+   (prime? n)))
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun bb-iter (n mx)
+  "2ずつ増加しながら, timed-prime-testをする"
+  (when (<= n mx)
+    (if (timed-prime-test n)
+        n
+        (bb-iter (+ 2 n) mx))))
+
+(defun search-for-primes (mn mx)
+  "指定した範囲の連続した奇数について素数判定を行う手続き"
+  (bb-iter
+   (if (even? mn)
+       (1+ mn) mn)
+   mx))
+
+(defun search-retry (x mx cnt)
+  (if (<= cnt 0)
+      x
+      (search-retry (1+ (search-for-primes x mx))
+                    mx (1- cnt))))
+
+(defun mysearch-iter (lis retry)
+  "retry 回チャレンジ"
+  (when (cadr lis)
+    (search-retry (car lis) (cadr lis) retry)
+    (mysearch-iter (cdr lis) retry)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((lis '(1000
+               10000
+               100000
+               1000000
+               10000000)))
+    (mysearch-iter lis 3)))
+;;; vim: set ft=lisp lisp:
