@@ -1,0 +1,91 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| http://sicp.iijlab.net/fulltext/x126.html
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-22.3671978886
+  (:use :cl))
+(in-package :ros.script.1-22.3671978886)
+
+;; (runtime) => (get-internal-run-time)
+
+(defun divides? (a b)
+  (= (rem b a) 0))
+
+(defun square (x) (* x x))
+
+(defun find-divisor (n test-divisor)
+    (cond ((> (square test-divisor) n) n)
+          ((divides? test-divisor n) test-divisor )
+          (t (find-divisor n (+ test-divisor 1)))))
+
+(defun smallest-divisor (n)
+  (find-divisor n 2))
+
+(defun prime? (n)
+  (= n (smallest-divisor n)))
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun report-prime (elapsed-time)
+  (print " *** ")
+  (print elapsed-time))
+
+(defun start-prime-test (n start-time)
+  (if (prime? n)
+      (report-prime (- (get-internal-run-time) start-time))))
+
+(defun timed-prime-test (n)
+  (print "")
+  (print n)
+  (time (start-prime-test n (get-internal-run-time))))
+
+(defun bb-iter (n mx)
+  (when (<= n mx)
+    (if (timed-prime-test n)
+        n
+        (bb-iter (+ 2 n) mx))))
+
+(defun search-for-primes (mn mx)
+  "指定した範囲の連続した奇数について素数判定を行う手続き"
+  (bb-iter
+   (if (even? mn)
+       (1+ mn) mn)
+   mx))
+
+(defun search-retry (x mx cnt)
+  (if (<= cnt 0)
+      x
+      (search-retry (1+ (search-for-primes x mx))
+                    mx (1- cnt))))
+
+(defun mysearch-iter (lis retry)
+  "retry 回チャレンジ"
+  (when (cadr lis)
+    (search-retry (car lis) (cadr lis) retry)
+    (mysearch-iter (cdr lis) retry)))
+
+;;; ↓ 見やすくフィルタ-
+;;; ./1-22.ros  | \grep -A4 -B1 '\*\*\*' | \grep -Ee '^[0-9][0-9]' -e 'total'
+
+;;; ↓ 平均で
+;;; ./1-22.ros  | \grep -A4 -B1 '\*\*\*' \
+;;;    | \grep -E -e 'total' | awk '{print $1}' | xargs -L 3 \
+;;;    | awk '{sum=0; for(i=1;i<=NF;i++){sum += $i}; print sum/NF}'
+
+
+;;; 9.66667e-06
+;;; 1.36667e-05
+;;; 2.26667e-05
+;;; 5.23333e-05
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((lis '(1000
+               10000
+               100000
+               1000000
+               10000000)))
+    (mysearch-iter lis 3)))
+;;; vim: set ft=lisp lisp:
