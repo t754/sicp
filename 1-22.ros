@@ -38,9 +38,11 @@ exec ros -Q -- $0 "$@"
 (defun timed-prime-test (n)
   (print "")
   (print n)
-  (time (start-prime-test n (get-internal-run-time))))
+  (time  ; get-internal-run-time だと分解能がなさすぎるので timeをついか
+   (start-prime-test n (get-internal-run-time))))
 
 (defun bb-iter (n mx)
+  "2ずつ増加しながら, timed-prime-testをする"
   (when (<= n mx)
     (if (timed-prime-test n)
         n
