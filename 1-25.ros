@@ -1,0 +1,91 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-25.3672399777
+  (:use :cl))
+(in-package :ros.script.1-25.3672399777)
+
+(defun square (x) (* x x))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun  fast-expt (b n)
+  (cond ((= n 0) 1)
+        ((even? n)
+         (square (fast-expt b (/ n 2))))
+        (t         (* b (fast-expt b (- n 1))))))
+
+
+(defun expmod(base exp m)
+  (rem (fast-expt base exp) m))
+
+
+
+(defun fermat-test(n)
+  (defun try-it(a)
+    (= (expmod a n n) a))
+  (try-it (1+  (random (- n 1)))))
+
+(defun fast-prime? (n times)
+  (cond ((= times 0) t)
+        ((fermat-test n) (fast-prime? n (- times 1)))
+        (t nil)))
+
+(defun timed-prime-test (n)
+  "time 関数用に変形 (1-22より)"
+  (let ((ans
+         (time  ; get-internal-run-time だと分解能がなさすぎるので timeに変更
+          (fast-prime? n 64))))
+    (print (if ans "***" ""))
+    (print n)
+    ans))
+
+
+
+(defun bb-iter (n mx)
+  "2ずつ増加しながら, timed-prime-testをする"
+  (when (<= n mx)
+    (if (timed-prime-test n)
+        n
+        (bb-iter (+ 2 n) mx))))
+
+(defun search-for-primes (mn mx)
+  "指定した範囲の連続した奇数について素数判定を行う手続き"
+  (bb-iter
+   (if (even? mn)
+       (1+ mn) mn)
+   mx))
+
+(defun search-retry (x mx cnt)
+  (if (<= cnt 0)
+      x
+      (search-retry (1+ (search-for-primes x mx))
+                    mx (1- cnt))))
+
+(defun mysearch-iter (lis retry)
+  "retry 回チャレンジ"
+  (when (cadr lis)
+    (search-retry (car lis) (cadr lis) retry)
+    (mysearch-iter (cdr lis) retry)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((lis '(1009
+               1013
+               1019
+               10007
+               10009
+               10037
+               100003 ;← ここあたりから果てしなく遅い
+               100019
+               100043
+               1000003
+               1000033
+               1000037
+               )))
+
+    (mapc (lambda (x) (timed-prime-test x)) lis)))
+;;; vim: set ft=lisp lisp:
