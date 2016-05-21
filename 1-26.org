@@ -1,0 +1,37 @@
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline
+#+OPTIONS: author:t broken-links:nil c:nil creator:nil
+#+OPTIONS: d:(not "LOGBOOK") date:t e:t email:nil f:t inline:t num:t
+#+OPTIONS: p:nil pri:nil prop:nil stat:t tags:t tasks:t tex:t
+#+OPTIONS: timestamp:t title:t toc:nil todo:t |:t
+#+TITLE: 1-26
+#+AUTHOR: tamakoron
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+CREATOR: Emacs 25.0.50.4 (Org mode 8.3.4)
+
+
+* 練習問題 1.26
+
+  1.24 での問題が遅い理由を考える.
+  expmod が square に部分を明示的に 掛け算にしているため,
+  1回につき同じ計算を2回おこなっている.
+  そのため,指数関数的に expmod が行われる.
+  よって $\Theta (log n)$ で 計算できる問題を $\Theta (n)$ で説いてしまっている.
+
+  コードを表すと以下となる
+
+#+BEGIN_SRC lisp
+  (defun expmod (base exp m)
+    (cond ((= exp 0) 1)
+          ((even? exp)
+           (rem
+            ;; ↓ (square (expmod base (/ exp 2) m))
+            (* (expmod base (/ exp 2) m)
+               (expmod base (/ exp 2) m))
+            m))
+          (t
+           (rem (* base
+                   ( expmod base (- exp 1) m))
+                m))))
+#+END_SRC
