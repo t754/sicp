@@ -1,0 +1,45 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-27.3672854279
+  (:use :cl))
+(in-package :ros.script.1-27.3672854279)
+
+(defun square (x) (* x x))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun expmod (base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (rem
+           (square (expmod base (/ exp 2) m))
+           m))
+        (t
+         (rem
+           (* base (expmod base (- exp 1) m))
+           m))))
+
+(defun retry (iter N)
+  "(A^N)% N"
+  (cond ((>= iter N) t)
+        ((= (expmod iter N N) iter)
+         (retry (1+ iter) N))
+        (t  nil)))
+
+
+(defun fermat-test-all (n)
+  (retry 1 n))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((carmichael-num '(255 561 1105 1729 2465 2821 6601))
+        (nonprime-num '(4 2892 123))
+        (prime-num '(2 3 5 7 11 13)))
+    (dolist (lis (list nonprime-num prime-num carmichael-num))
+      (dolist (x lis)
+        (format t "~D ~S~%" x (fermat-test-all x))))))
+;;; vim: set ft=lisp lisp:
