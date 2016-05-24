@@ -1,0 +1,25 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-30.3673092514
+  (:use :cl))
+(in-package :ros.script.1-30.3673092514)
+
+(defun cube (x)
+  (* x x x))
+
+(defun sum (term a next b)
+  (labels ((iter (a result)
+             (if (> a b)
+                 result
+                 (iter (funcall next a)
+                       (+ result (funcall term a))))))
+    (iter a 0)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (format t "~D ~%"(sum #'cube 1 #'1+ 10)))
+;;; vim: set ft=lisp lisp:
