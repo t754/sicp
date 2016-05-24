@@ -1,0 +1,47 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-29.3673083898
+  (:use :cl))
+(in-package :ros.script.1-29.3673083898)
+
+(defun cube (x)
+  (* x x x))
+
+(defun sum (term a next b)
+  (if (> a b)
+      0
+      (+  (funcall term a)
+          (sum term  (funcall next a) next b))))
+
+(defun sympson (f a b n)
+  "シンプソンの公式
+   https://upload.wikimedia.org/math/5/5/b/55bb40db12989244f1e3fdedbeb86dd5.png
+   h = (b-a)/n
+   y_k= f(a+kh)
+   "
+  (let ((h (/ (- b a) n)))
+    (* (/ h 3)
+       (+
+        (funcall f a)
+        (* 2 (sum f
+                  (funcall f (+ a (* 2 h)))  ;y2
+                  #'(lambda (x) (+ (* 2 h) x))
+                  b))
+        (* 4 (sum f
+                  (funcall f (+ a h))  ;y1
+                  #'(lambda (x) (+ (* 2 h) x))
+                  b))
+        (funcall f b)))))
+
+
+;; (sum #'cube 1 #'1+ 10)
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((li '(100 1000)))
+    (dolist (x li)
+      (let ((ans (sympson #'cube 0 1 x)))
+        (format t "~D :: ~S (~G)~%"  x ans ans)))))
+;;; vim: set ft=lisp lisp:
