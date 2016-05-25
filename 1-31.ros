@@ -8,7 +8,16 @@ exec ros -Q -- $0 "$@"
 (in-package :ros.script.1-31.3673098103)
 
 
+(defun product-r (term a next b)
+  "再帰"
+  (if (> a b)
+      1
+      (* (funcall term a)
+         (product-r
+          term (funcall next a) next b))))
+
 (defun product (term a next b)
+  "反復"
   (labels ((iter (a result)
              (if (> a b)
                  result
@@ -48,8 +57,6 @@ f(6) = 8/7
 f(n)   = a/b
 f(n+1) = (b+1)/(a+1)
 
- π = 4Πf(n)
-
 f(n) = (n+2)/(n+1) if even
      = (n+1)/(n+2) if odd
 
@@ -59,6 +66,7 @@ f(n) = (n+2)/(n+1) if even
       (/ (+ 1 n) (+ 2 n))))
 
 (defun my-pi (n)
+  "π = 4Πf(n)"
   (* 4 (product #'pi-func
                 1
                 #'1+
