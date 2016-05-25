@@ -1,0 +1,49 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-32.3673172739
+  (:use :cl))
+(in-package :ros.script.1-32.3673172739)
+
+(defun accumulate (combiner null-value term a next b)
+  "反復"
+  (labels ((iter (aa result)
+             (if (> aa b)
+                 result
+                 (iter (funcall next aa)
+                       (funcall combiner result (funcall term aa))))))
+    (iter a null-value)))
+
+(defun accumulate-r (combiner null-value term a next b)
+  "再帰"
+  (if (> a b)
+      null-value
+      (funcall combiner
+               (funcall term a)
+               (accumulate-r combiner null-value term (funcall next a) next b))))
+
+
+
+(defun product (term a next b)
+  (accumulate   #'* 1 term a next b))
+
+(defun product-r (term a next b)
+  (accumulate-r #'* 1 term a next b))
+
+(defun sum (term a next b)
+  (accumulate #'+ 0 term a next b))
+
+
+(defun sum-r (term a next b)
+  (accumulate-r #'+ 0 term a next b))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (format t "sum-r     1..10    ~D ~%" (sum-r     #'identity 1 #'1+ 10))
+  (format t "sum       1..10    ~D ~%" (sum       #'identity 1 #'1+ 10))
+  (format t "product-r 1..10    ~D ~%" (product-r #'identity 1 #'1+ 10))
+  (format t "product   1..10    ~D ~%" (product   #'identity 1 #'1+ 10)))
+;;; vim: set ft=lisp lisp:
