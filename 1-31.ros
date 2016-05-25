@@ -1,0 +1,73 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-31.3673098103
+  (:use :cl))
+(in-package :ros.script.1-31.3673098103)
+
+
+(defun product (term a next b)
+  (labels ((iter (a result)
+             (if (> a b)
+                 result
+                 (iter (funcall next a)
+                       (* result (funcall term a))))))
+    (iter a 1)))
+
+
+
+(defun factorial (b)
+  (product #'identity 1 #'1+ b))
+;; (factorial 5) ;=> 120
+
+(defun square(n)
+  (* n n))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+;; (defun pi-next (f n)
+;;   "(n) = a/b
+;;    (n+1) = (b+1)/(a+1)"
+;;   (let ((a (numerator n))
+;;          (b (denominator n)))
+;;      (/ (1+ b) (1+ a))))
+
+(defun pi-func (n)
+  "
+f(1) = 2/3
+f(2) = 4/3
+f(3) = 4/5
+f(4) = 6/5
+f(5) = 6/7
+f(6) = 8/7
+
+
+f(n)   = a/b
+f(n+1) = (b+1)/(a+1)
+
+ π = 4Πf(n)
+
+f(n) = (n+2)/(n+1) if even
+     = (n+1)/(n+2) if odd
+
+"
+  (if (even? n)
+      (/ (+ 2 n) (+ 1 n))
+      (/ (+ 1 n) (+ 2 n))))
+
+(defun my-pi (n)
+  (* 4 (product #'pi-func
+                1
+                #'1+
+                n)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((li '(100 1000 10000)))
+    (dolist (n li)
+      (format t "π近似(n=~D)   ~G~%" n (my-pi n)))))
+;;; vim: set ft=lisp lisp:
