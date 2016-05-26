@@ -12,8 +12,8 @@ exec ros -Q -- $0 "$@"
   (if (eq (cdr lis) nil)
       nil
       (cons (+ (car lis)
-             (cadr lis))
-             (adjacent-plus (cdr lis)))))
+               (cadr lis))
+            (adjacent-plus (cdr lis)))))
 
 (defun pascal-iter (lis count)
   (if (>= 0 count)

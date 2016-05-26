@@ -23,7 +23,7 @@ exec ros -Q -- $0 "$@"
   "a*b^n"
   (cond ((= n 0) a)
         ((even? n)  (myexpt a (square b)
-                               (/ n 2)))
+                            (/ n 2)))
         (t          (myexpt (* a b) b (- n 1)))))
 
 

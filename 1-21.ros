@@ -13,9 +13,9 @@ exec ros -Q -- $0 "$@"
 (defun square (x) (* x x))
 
 (defun find-divisor (n test-divisor)
-    (cond ((> (square test-divisor) n) n)
-          ((divides? test-divisor n) test-divisor )
-          (t (find-divisor n (+ test-divisor 1)))))
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor )
+        (t (find-divisor n (+ test-divisor 1)))))
 
 (defun main (&rest argv)
   (declare (ignorable argv))

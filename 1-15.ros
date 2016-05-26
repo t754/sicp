@@ -21,9 +21,9 @@ exec ros -Q -- $0 "$@"
 
 (defun count-sub (str pat)
   (loop with z = 0 with s = 0 while s do
-	(when (setf s (search pat str :start2 s))
-	  (incf z) (incf s (length pat)))
-	finally (return z)))
+       (when (setf s (search pat str :start2 s))
+         (incf z) (incf s (length pat)))
+     finally (return z)))
 
 (defun my-sine (xx)
   (format t "P-count:~S~%"
