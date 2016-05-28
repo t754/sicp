@@ -1,0 +1,77 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-28.3673005754
+  (:use :cl))
+(in-package :ros.script.1-28.3673005754)
+
+(defun square (x) (* x x))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+;; (a^(2^r * d)) %n == (-1 or? 1) らしい←よくわからん
+
+;; x % n == -1 とは
+;; x % n == (n-1)
+
+(defun expmod (base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (rem
+           (square (expmod base (/ exp 2) m))
+           m))
+        (t
+         (rem
+           (* base (expmod base (- exp 1) m))
+           m))))
+
+(defun mycheck (val n)
+  (or (= val 1) (= val (1- n))))
+
+
+
+;; 超参考になった http://homepages.math.uic.edu/~leon/mcs425-s08/handouts/Rabin-Miller-Examples.pdf
+(defun miller-rabin-core(base r d m)
+  (cond ((mycheck
+          (expmod base (* d (expt 2 r)) m)
+          m)
+         t)
+        ((even? d) (miller-rabin-core base (1+ r) (/ d 2) m))
+        (t nil)))
+
+
+
+(defun miller-rabin-test (a n)
+  "(A^(N-1))%N === 1"
+   (miller-rabin-core a 0 (1- n) n))
+
+(defconstant retry-times 128)
+
+(defun random-test (n)
+  (labels ((tmp-func (times)
+             (cond ((< times 0) t)
+                   ((miller-rabin-test (1+ (random (1- n))) n)
+                    (tmp-func (1- times)))
+                   (t nil))))
+    (tmp-func retry-times)))
+
+
+;; (miller-rabin-test 10 100)
+;; (miller-rabin-test 11 100)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  ;; (trace tes)
+  (let ((carmichael-num '(255 561 1105 1729 2465 2821 6601))
+        (nonprime-num '(4 2892 123))
+        (prime-num '(2 3 5 7 17011 11 13 )))
+    (dolist (lis (list nonprime-num prime-num carmichael-num))
+      (dolist (x lis)
+        (format t "~D ~S~%" x (random-test x))))))
+  ;; (print (miller-rabin-test 105532 280001)))
+  ;; (trace expmod-ex)
+
+;;; vim: set ft=lisp lisp:
