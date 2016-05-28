@@ -1,0 +1,90 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-33.3673181639
+  (:use :cl)
+  (:shadow gcd))
+(in-package :ros.script.1-33.3673181639)
+
+(defun square (x) (* x x))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun expmod (base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (rem
+           (square (expmod base (/ exp 2) m))
+           m))
+        (t
+         (rem
+           (* base (expmod base (- exp 1) m))
+           m))))
+
+(defun mycheck (val n)
+  (or (= val 1) (= val (1- n))))
+
+(defun miller-rabin-core(base r d m)
+  (cond ((mycheck
+          (expmod base (* d (expt 2 r)) m)
+          m)
+         t)
+        ((even? d) (miller-rabin-core base (1+ r) (/ d 2) m))
+        (t nil)))
+
+(defun miller-rabin-test (a n)
+  "(A^(N-1))%N === 1"
+   (miller-rabin-core a 0 (1- n) n))
+
+(defconstant retry-times 128)
+
+(defun random-test (n)
+  (if (<= n 2)
+      t
+      (labels ((tmp-func (times)
+                 (cond ((< times 0) t)
+                       ((miller-rabin-test (1+ (random (1- n))) n)
+                        (tmp-func (1- times)))
+                       (t nil))))
+        (tmp-func retry-times))))
+
+
+(defun filterd-accumulate (filter combiner null-value term a next b)
+    (labels ((iter (aa result)
+             (cond ((> aa b) result)
+                   ((funcall filter aa)
+                    (iter (funcall next aa)
+                          (funcall combiner result (funcall term aa))))
+                   (t (iter (funcall next aa) result)))))
+      (iter a null-value)))
+
+(defun prime? (x)
+  (random-test x))
+
+(defun question1 (a b)
+    "a..b 区間の素数の二乗の和"
+    (filterd-accumulate #'prime? #'+ 0 #'square a '1+ b))
+
+(defun gcd (a b)
+  (if (= b 0)
+      a
+      (gcd b (rem a b))))
+(defun question2 (n)
+   "GCD(i,n) = 1 となる nより小さいすべての正整数i (i<n) の積"
+   (filterd-accumulate
+    #'(lambda (x) (= (gcd n x) 1))
+    #'* 1 #'identity 1 #'1+ n))
+
+;;; 1. a..b 区間の素数の二乗の和
+;;; 2. GCD(i,n) = 1 となる すべての正整数(i<n) の積
+(question2  10)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((li (list '(question1 10 20) '(question2 9))))
+    (dolist (val li)
+      (format t "~S => ~D ~%" val (eval val)))))
+;;; vim: set ft=lisp lisp:
