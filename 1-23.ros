@@ -18,9 +18,9 @@ exec ros -Q -- $0 "$@"
       (+ 2 n)))
 
 (defun find-divisor (n test-divisor)
-    (cond ((> (square test-divisor) n) n)
-          ((divides? test-divisor n) test-divisor )
-          (t (find-divisor n (next test-divisor )))))
+  (cond ((> (square test-divisor) n) n)
+        ((divides? test-divisor n) test-divisor )
+        (t (find-divisor n (next test-divisor )))))
 
 (defun smallest-divisor (n)
   (find-divisor n 2))

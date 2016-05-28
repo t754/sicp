@@ -27,7 +27,7 @@ exec ros -Q -- $0 "$@"
     #'(lambda (x) (setf tmp n) (setf n x) tmp)))
 (defun good-SUPER-enough? (guess x)
   (< (abs (- (funcall *f-buffer* guess) guess)) 0.001))
-  ;; (< (abs (- guess (improve guess x))) 0.001))
+;; (< (abs (- guess (improve guess x))) 0.001))
 
 (defparameter *enough-toggle* nil)
 
@@ -45,14 +45,14 @@ exec ros -Q -- $0 "$@"
   (sqrt-iter 1.0 x))
 
 (defun fail-good-enough-print (x)
-    "
+  "
 good-enough? だとうまくいかない例をあらわすため
 自作sqrt と 組み込みsqrt &  それらの差 をあらわす
      "
-    (let ((mySqrt   (sqrt x))
-          (trueSqrt (cl:sqrt x)))
-      (format t "my sqrt: ~G build-in sqrt: ~G (diff ~G) ~%"
-              mysqrt truesqrt (abs (- mySqrt trueSqrt)))))
+  (let ((mySqrt   (sqrt x))
+        (trueSqrt (cl:sqrt x)))
+    (format t "my sqrt: ~G build-in sqrt: ~G (diff ~G) ~%"
+            mysqrt truesqrt (abs (- mySqrt trueSqrt)))))
 
 (defun main (s-exp &rest argv)
   (declare (ignorable argv))

@@ -21,12 +21,12 @@ exec ros -Q -- $0 "$@"
   (cond ((= exp 0) 1)
         ((even? exp)
          (rem
-           (square (expmod base (/ exp 2) m))
-           m))
+          (square (expmod base (/ exp 2) m))
+          m))
         (t
          (rem
-           (* base (expmod base (- exp 1) m))
-           m))))
+          (* base (expmod base (- exp 1) m))
+          m))))
 
 (defun mycheck (val n)
   (or (= val 1) (= val (1- n))))
@@ -46,7 +46,7 @@ exec ros -Q -- $0 "$@"
 
 (defun miller-rabin-test (a n)
   "(A^(N-1))%N === 1"
-   (miller-rabin-core a 0 (1- n) n))
+  (miller-rabin-core a 0 (1- n) n))
 
 (defconstant retry-times 128)
 
@@ -71,7 +71,7 @@ exec ros -Q -- $0 "$@"
     (dolist (lis (list nonprime-num prime-num carmichael-num))
       (dolist (x lis)
         (format t "~D ~S~%" x (random-test x))))))
-  ;; (print (miller-rabin-test 105532 280001)))
-  ;; (trace expmod-ex)
+;; (print (miller-rabin-test 105532 280001)))
+;; (trace expmod-ex)
 
 ;;; vim: set ft=lisp lisp:
