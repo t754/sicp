@@ -1,0 +1,81 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+
+(defpackage :ros.script.1-37.3673454958
+  (:use :cl))
+
+(in-package :ros.script.1-37.3673454958)
+
+(defvar tolerance 0.00001)
+
+(defun fixed-point (f first-guess )
+  (labels ((close-enough? (v1 v2)
+             (< (abs (- v1 v2 ))
+                tolerance))
+           (try (guess)
+             (format t "~S~%" guess)
+             (let (( next (funcall f guess)))
+               (if ( close-enough? guess next)
+                   next
+                   (try next )))))
+    (try first-guess)))
+
+(defun cont-frac (n d k)
+  "再帰ver"
+  (if (<= k 0)
+      0
+      (/ (funcall n k)
+         (+ (funcall d k) (cont-frac n d (1- k))))))
+
+(defun cont-frac-iter (n d k)
+  "反復ver"
+  (labels
+      ((iter (kk tmp)
+         (if (<= kk 0)
+             tmp
+             (iter (1- kk)
+                   (/ (funcall n kk)
+                      (+ (funcall d kk) tmp))))))
+    (iter k 0)))
+
+
+(defvar reciprocal-golden-ratio
+  (/ 2 (+ 1 (sqrt 5))))
+
+
+(defun 4float-round (x)
+  (round (* 10000 x)))
+
+(defun bisearch (my< my> my= f var cnt)
+  (let ((xa (funcall f cnt)))
+    (cond ((funcall my< xa var) (bisearch my< my> my= f var (* cnt 2)))
+          ((funcall my> xa var) (bisearch my< my> my= f var (/ cnt 2)))
+          ((funcall my= xa var) cnt))))
+
+(defun change-line-search (f x cmp next)
+  (let ((init-var (funcall f x)))
+    (labels ((myiter (n)
+               (if (funcall cmp init-var (funcall f n))
+                   (myiter (funcall next n))
+                   n)))
+      (myiter x))))
+
+
+(defun main (&rest argv)
+  "必要ないことしてる bisearch とか"
+  (declare (ignorable argv))
+  (let ((golden  (4float-round reciprocal-golden-ratio)))
+    (flet  ((cfrac (x)
+              (cont-frac (lambda (i) (declare (ignorable i)) 1.0)
+                         (lambda (i) (declare (ignorable i)) 1.0) x)))
+      (flet ((frac (x) (4float-round (cfrac x))))
+        (let ((ans
+               (change-line-search #'frac
+                                   (bisearch #'< #'> #'= #'frac golden 4)
+                                   #'=
+                                   #'1-)))
+          (format t "~G ~G ~D~%" (cfrac ans) reciprocal-golden-ratio ans))))))
+;;; vim: set ft=lisp lisp:
