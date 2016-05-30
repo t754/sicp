@@ -1,0 +1,34 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-38.3673604344
+  (:use :cl))
+(in-package :ros.script.1-38.3673604344)
+
+(defun cont-frac (n d k)
+  "反復ver"
+  (labels
+      ((iter (kk tmp)
+         (if (<= kk 0)
+             tmp
+             (iter (1- kk)
+                   (/ (funcall n kk)
+                      (+ (funcall d kk) tmp))))))
+    (iter k 0)))
+(defun di (x)
+  (if (= 2 (rem x 3))
+      (+ 2 (* 2 (floor (/ x 3))))
+      1))
+
+(defvar kcount 256)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (format t "e = ~D~%"
+          (+ 2
+             (cont-frac #'(lambda (x) (declare (ignorable x)) 1.0)
+                        #'di
+                        kcount))))
+;;; vim: set ft=lisp lisp:
