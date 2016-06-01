@@ -1,0 +1,37 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-39.3673773930
+  (:use :cl))
+(in-package :ros.script.1-39.3673773930)
+
+
+(defun cont-frac (n d k)
+  "反復ver"
+  (labels
+      ((iter (kk tmp)
+         (if (<= kk 0)
+             tmp
+             (iter (1- kk)
+                   (/ (funcall n kk)
+                      (+ (funcall d kk) tmp))))))
+    (iter k 0)))
+
+(defun oodd (x)
+  (- (* 2 x) 1))
+
+(defun tan-ck  (x k)
+  (cont-frac #'(lambda (i) (if (= i 1)
+                               x
+                               (* -1 (* x x))))
+             #'oodd k))
+
+(defvar *tan-k* 100)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (x '(1.2 3.4 5.6 -7.8 9.1 -2.1))
+     (format t "buildin tan(~D) ~G face-tan(~D) ~G ~%" x (tan x) x (tan-ck x *tan-k*))))
+;;; vim: set ft=lisp lisp:
