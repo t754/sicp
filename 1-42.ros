@@ -1,0 +1,20 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-42.3673785939
+  (:use :cl))
+(in-package :ros.script.1-42.3673785939)
+
+(defun square (x) (* x x))
+
+(defun compose (f g)
+  (lambda (x) (funcall f (funcall g x))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let  ((func
+          '(funcall (compose #'square #'1+) 6)))
+    (format t "~S -> ~D~%" func (eval func))))
+;;; vim: set ft=lisp lisp:
