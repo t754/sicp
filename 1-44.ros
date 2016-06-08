@@ -1,0 +1,43 @@
+;#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(defpackage :ros.script.1-44.3673843271
+  (:use :cl))
+(in-package :ros.script.1-44.3673843271)
+
+(defun compose (f g)
+  (lambda (x) (funcall f (funcall g x))))
+
+(defun repeated (f n)
+  (labels ((iter (f acc n)
+    (if (< n 1)
+        acc
+        (iter f (compose f acc) (1- n)))))
+    (iter f #'identity n)))
+
+(defvar dx 0.01)
+
+(defun smoothing (f)
+  (lambda (x)
+    (/ (+ (funcall f (- x dx))
+          (funcall f x)
+          (funcall f (+ x dx)))
+       3.0)))
+
+
+(defun n-fold-smoothed (f n)
+  (lambda (x) (funcall (funcall (repeated #'smoothing n) f) x)))
+
+(defun sample-func (x)
+  (floor (* 5.1 (sin (* 3 x)))))
+
+(defun main (x)
+  (let ((a (read-from-string x)))
+    ;; (format t "~F " a)
+    ;; (format t "~F " (sample-func a))
+    ;; (format t "~F " (funcall (smoothing #'sample-func) a))
+    (format t "~F%" (funcall (n-fold-smoothed #'sample-func 10) a))
+    rmat t "~%")))
+;;; vim: set ft=lisp lisp:
