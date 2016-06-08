@@ -12,9 +12,11 @@ exec ros -Q -- $0 "$@"
   (lambda (x) (funcall f (funcall g x))))
 
 (defun repeated (f n)
-  (if (<= n 1)
-      f
-      (compose f (repeated f (1- n)))))
+  (labels ((iter (f acc n)
+    (if (< n 1)
+        acc
+        (iter f (compose f acc) (1- n)))))
+    (iter f #'identity n)))
 
 (defun square (x) (* x x))
 
