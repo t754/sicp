@@ -1,4 +1,4 @@
-;#!/bin/sh
+#!/bin/sh
 #|-*- mode:lisp -*-|#
 #| <Put a one-line description here>
 exec ros -Q -- $0 "$@"
@@ -38,6 +38,6 @@ exec ros -Q -- $0 "$@"
     ;; (format t "~F " a)
     ;; (format t "~F " (sample-func a))
     ;; (format t "~F " (funcall (smoothing #'sample-func) a))
-    (format t "~F%" (funcall (n-fold-smoothed #'sample-func 10) a))
-    rmat t "~%")))
+    (format t "~F" (funcall (n-fold-smoothed #'sample-func 10) a))
+    (format t "~%")))
 ;;; vim: set ft=lisp lisp:
