@@ -1,0 +1,76 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.1-46.3674708608
+  (:use :cl)
+  (:export :my-sqrt :fixed-point))
+(in-package :ros.script.1-46.3674708608)
+
+(defun iterractive-improve (good-enoughp improve)
+  "何かを計算するにあたって、
+答えに対する初期推測値から始めて、
+その推測値が十分によいかテストし、
+よくなければ推測値を改良し、
+改良した推測値を新しい推測値として
+そのプロセスを続けるというものである
+- good-enough :: 推測値が十分によいか判断する手続き
+- improve :: 推測値を改良する手続き"
+  (lambda (x)
+    (if (funcall good-enoughp x)
+        x
+        (funcall
+         (iterractive-improve good-enoughp improve)
+         (funcall improve x)))))
+
+
+(defparameter *f-buffer*
+  (let ((n 0) (tmp 0))
+    #'(lambda (x) (setf tmp n) (setf n x) tmp)))
+(defun sqrt-enoughp (guess)
+  (< (abs (- (funcall *f-buffer* guess) guess)) 0.001))
+
+
+(defun average (x y)
+  (/ (+ x y) 2))
+;; (defun square (x) (* x x))
+
+(defun sqrt-improve (x guess)
+  (average guess (/ x guess)))
+
+(defun compose (f g)
+  (lambda (x) (funcall f (funcall g x))))
+
+
+(defun my-sqrt (x)
+  (funcall (iterractive-improve
+            #'sqrt-enoughp
+            (lambda (g) (sqrt-improve x g)))
+           x))
+
+
+(defvar tolerance 0.00001)
+
+(defun close-enoughp (f)
+  (lambda (v1)
+    (< (abs (- v1 (funcall f v1)))
+       tolerance)))
+
+(defun fixed-point (f first-guess)
+  (funcall (iterractive-improve
+            (lambda (x)
+              (funcall (close-enoughp f) x))
+            (lambda (guess)
+              (funcall f guess)))
+           first-guess))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (format t "~F~%" (my-sqrt 2))
+  (format t "~F~%" (fixed-point ( lambda (y) (+ (sin y) (cos y))) 1.0)))
+;;; vim: set ft=lisp lisp:
