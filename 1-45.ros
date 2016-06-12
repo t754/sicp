@@ -6,9 +6,9 @@ exec ros -Q -- $0 "$@"
 (progn ;;init forms
   )
 
-;; (defpackage :ros.script.1-45.3674386603
-;;   (:use :cl))
-;; (in-package :ros.script.1-45.3674386603)
+(defpackage :ros.script.1-45.3674386603
+  (:use :cl))
+(in-package :ros.script.1-45.3674386603)
 
 (defun compose (f g)
   (lambda (x) (funcall f (funcall g x))))
@@ -50,7 +50,8 @@ exec ros -Q -- $0 "$@"
     cnt)
    1.0))
 
-;; SOMEDAYS: 調査はいつか
+
+;; SOME: 調査はいつか
 (defun main (a b c &rest argv)
   (declare (ignorable argv))
   (let ((x (parse-integer a))
