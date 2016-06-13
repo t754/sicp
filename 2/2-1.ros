@@ -1,0 +1,56 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-1.3674737247
+  (:use :cl))
+(in-package :ros.script.2-1.3674737247)
+
+(defun numer (x) (car x))
+(defun denom (x) (cdr x))
+
+
+(defun make-rat (n d)
+  (let ((g (gcd n d))
+        (sing (signum (* n d))))
+    (cons (* sing (/ (abs n) g)) (/ (abs d) g))))
+
+(defun add-rat (x y)
+  (make-rat (+ (* (numer x) (denom y))
+               (* (numer y) (denom x)))
+            (* (denom x) (denom y))))
+
+
+(defun sub-rat (x y)
+  (make-rat (- (* (numer x) (denom y))
+               (* (numer y) (denom x)))
+            (* (denom x) (denom y))))
+
+
+(defun mul-rat (x y)
+  (make-rat (* (numer x) (numer y))
+            (* (denom x) (denom y))))
+
+
+(defun div-rat (x y)
+  (make-rat (* (numer x) (denom y))
+            (* (denom x) (numer y))))
+
+
+(defun equal-rat? (x y)
+    (= (* (numer x) (denom y))
+     (* (numer y) (denom x))))
+
+(defun print-rat (x)
+  (format t "~D/~D~%" (numer x) (denom x)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (x (list '(10 . 2) '(-30 . 4) '(50 . -6) '(-70 . -8)))
+    (format t "input :: ~S ~S~%" (car x) (cdr x))
+    (print-rat (make-rat (car x) (cdr x)))))
+;;; vim: set ft=lisp lisp:
