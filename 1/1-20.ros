@@ -12,6 +12,20 @@ exec ros -Q -- $0 "$@"
   (if (= b 0)
       a
       (gcd b (rem a b))))
+cond
+;; (defmacro gcd-mac (a b)
+;;   `(if (= ,b 0)
+;;       ,a
+;;       (gcd-mac ,b (rem ,a ,b))))
+
+;; (IF (= (REM (REM 40 (REM 206 40)) (REM (REM 206 40) (REM 40 (REM 206 40)))) 0)
+;;     (REM (REM 206 40) (REM 40 (REM 206 40)))
+;;     (GCD-MAC
+;;      (REM (REM 40 (REM 206 40)) (REM (REM 206 40) (REM 40 (REM 206 40))))
+;;      (REM (REM (REM 206 40) (REM 40 (REM 206 40)))
+;;           (REM (REM 40 (REM 206 40))
+;;                (REM (REM 206 40) (REM 40 (REM 206 40)))))))
+
 (defun main (&rest argv)
   (declare (ignorable argv))
   (trace gcd)
@@ -26,7 +40,7 @@ exec ros -Q -- $0 "$@"
 
 ;; remainder評価回数
 ;; 正規順序 :: 4回
-;; 作用的順序 :: 5回
+;; 作用的順序 :: 5回 ← は間違い
 ;;
 ;;;; 最後(GCD 2 0) の際に
 ;;;;     0←(rem 4 2)を評価する場合5回
