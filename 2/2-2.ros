@@ -1,0 +1,49 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-2.3674815769
+  (:use :cl))
+(in-package :ros.script.2-2.3674815769)
+
+(defun make-segment (start end)
+  (cons start end))
+
+(defun start-segment (seg)
+  (car seg))
+
+(defun end-segment (seg)
+  (cdr seg))
+
+(defun mid-segment (seg)
+  (/ (+ (start-segment seg) (end-segment seg)) 2))
+
+
+(defun make-point (x y)
+  (cons x y))
+
+(defun x-point (point)
+  (car point))
+
+(defun y-point (point)
+  (cdr point))
+
+(defun midpoint-segment (p)
+   (make-point (mid-segment (x-point p))
+               (mid-segment (y-point p))))
+
+(defun print-point (p)
+  (format t "~%(~S,~S)" (x-point p) (y-point p)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (let ((x (make-segment 11    17))
+        (y (make-segment 1024 625)))
+    (let ((poi (make-point x y)))
+      (print-point poi)
+      (print-point (midpoint-segment poi)))))
+;;; vim: set ft=lisp lisp:
