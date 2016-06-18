@@ -1,0 +1,91 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-3.ros.3675175631
+  (:use :cl))
+(in-package :ros.script.2-3.ros.3675175631)
+
+(defun make-segment (start end)
+  (cons start end))
+
+
+(defun start-segment (seg)
+  (car seg))
+
+(defun end-segment (seg)
+  (cdr seg))
+
+(defun mid-segment (seg)
+  (/ (+ (start-segment seg) (end-segment seg)) 2))
+
+
+(defun make-point (x-seg y-seg)
+  (cons x-seg y-seg))
+
+(defun x-point (point)
+  (car point))
+
+(defun y-point (point)
+  (cdr point))
+
+(defun midpoint-segment (p)
+   (make-point (mid-segment (x-point p))
+               (mid-segment (y-point p))))
+
+(defun print-point (p)
+  (format t "~%(~S,~S)" (x-point p) (y-point p)))
+
+(defun make-rectangle (po1 po2)
+  (cons po1 po2))
+
+(defun minpoint-recctangle (rec)
+  (make-point
+   (min (x-point (car rec))
+        (x-point (cdr rec)))
+   (min (y-point (car rec))
+        (y-point (cdr rec)))))
+
+(defun maxpoint-recctangle (rec)
+  (make-point
+   (max (x-point (car rec))
+        (x-point (cdr rec)))
+   (max (y-point (car rec))
+        (y-point (cdr rec)))))
+(defun x-segment-rectangle (rec)
+  (make-segment
+   (x-point (car rec))
+   (x-point (cdr rec))))
+
+(defun y-segment-rectangle (rec)
+  (make-segment
+   (y-point (car rec))
+   (y-point (cdr rec))))
+
+(defun rectangle-f (f rec)
+  (let ((xseg (x-segment-rectangle rec))
+        (yseg (y-segment-rectangle rec)))
+    (let ((x-len (abs (- (start-segment xseg)
+                         (end-segment   xseg))))
+          (y-len (abs (- (start-segment yseg)
+                         (end-segment   yseg)))))
+      (funcall f x-len y-len))))
+
+(defun outer-rectangle (rec)
+  (rectangle-f (lambda (x y) (* 2 (+ x y))) rec))
+
+(defun area-rectangle (rec)
+  (rectangle-f (lambda (x y) (* x y)) rec))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist  (x (list (make-point (make-segment 7 5) (make-segment 9 1))
+                    (make-point (make-segment 2 8) (make-segment 3 4))))
+    (print-point x)
+    (format t "outer::~S area::~S ~%" (outer-rectangle x) (area-rectangle x))))
+
+;;; vim: set ft=lisp lisp:
