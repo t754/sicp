@@ -1,0 +1,38 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+
+(defpackage :ros.script.2-4.3675224394
+  (:use :cl)
+  (:shadow car cdr cons)
+  (:export main))
+(in-package :ros.script.2-4.3675224394)
+
+(defun cons (x y)
+  (lambda (m)
+    (funcall m x y)))
+
+(defun car (z)
+  (funcall z (lambda (p _)
+               (declare (ignorable _))
+               p)))
+
+(defun cdr (z)
+  (funcall z (lambda (_ p)
+               (declare (ignorable _))
+               p)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (s-exp
+             '((car (cons 'left 'right))
+               (cdr (cons 'left 'right))))
+    (format t "~S => ~S~%" s-exp (eval s-exp))))
+
+;;; vim: set ft=lisp lisp:
