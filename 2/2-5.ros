@@ -1,0 +1,49 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-5.3675343190
+  (:use :cl)
+  (:shadow :expt :car :cdr :cons))
+(in-package :ros.script.2-5.3675343190)
+
+(defun expt (e k)
+  "e^k"
+  (labels ((mye (a b n)
+             (cond ((= n 0) a)
+                   ((evenp n)  (mye a (* b b)
+                                    (/ n 2)))
+                   (t          (mye (* a b) b (- n 1))))))
+    (mye 1 e k)))
+
+
+
+(defun cons (a b)
+  "2^a * 3^b"
+  (* (expt 2 a) (expt 3 b)))
+
+(defun car-cdr-core (tmp cnt bottom)
+  (if (= (rem tmp bottom) 0)
+      (car-cdr-core (/ tmp bottom) (1+ cnt) bottom)
+      cnt))
+
+(defun car (c)
+  (car-cdr-core c 0 2))
+
+(defun cdr (c)
+  (car-cdr-core c 0 3))
+
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (s-exp
+             '((cons 7 11)
+               (car (cons 7 11))
+               (cdr (cons 7 11))))
+    (format t "~S => ~S~%" s-exp (eval s-exp))))
+;;; vim: set ft=lisp lisp:
