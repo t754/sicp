@@ -1,0 +1,42 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-6.3675430904
+  (:use :cl))
+(in-package :ros.script.2-6.3675430904)
+
+
+
+(defun add-1 (n)
+  (lambda (f) (lambda (x) (funcall f  (funcall (funcall n f) x)))))
+
+(defvar zero
+  (lambda (f)
+    (declare (ignorable f))
+    (lambda (x)
+      x)))
+(defvar one
+  (lambda (f)
+    (lambda (x)
+      (funcall f x ))))
+(defvar two
+  (lambda (f)
+    (lambda (x)
+      (funcall f (funcall f x )))))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (s-exp
+            '((funcall (funcall zero #'1+) 0)
+              (funcall (funcall (add-1 zero) #'1+) 0)
+              (funcall (funcall (add-1 (add-1 zero)) #'1+) 0)
+              (funcall (funcall one #'1+) 0)
+              (funcall (funcall two #'1+) 0)))
+    (format t "~S => ~S~%" s-exp (eval s-exp))))
+;;; vim: set ft=lisp lisp:
