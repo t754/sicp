@@ -27,13 +27,13 @@ exec ros -Q -- $0 "$@"
        (+
         (funcall f a)
         (* 2 (sum f
-                  (funcall f (+ a (* 2 h)))  ;y2
+                  (+ a (* 2 h ))
                   #'(lambda (x) (+ (* 2 h) x))
-                  b))
+                  (- b (* 2 h))))
         (* 4 (sum f
-                  (funcall f (+ a h))  ;y1
+                  (+ a h)
                   #'(lambda (x) (+ (* 2 h) x))
-                  b))
+                  (- b h)))
         (funcall f b)))))
 
 
@@ -42,6 +42,6 @@ exec ros -Q -- $0 "$@"
   (declare (ignorable argv))
   (let ((li '(100 1000)))
     (dolist (x li)
-      (let ((ans (sympson #'cube 0 1 x)))
+      (let ((ans (sympson #'cube 0.0 1.0 x)))
         (format t "~D :: ~S (~G)~%"  x ans ans)))))
 ;;; vim: set ft=lisp lisp:
