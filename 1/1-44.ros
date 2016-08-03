@@ -12,9 +12,9 @@ exec ros -Q -- $0 "$@"
 
 (defun repeated (f n)
   (labels ((iter (f acc n)
-    (if (< n 1)
-        acc
-        (iter f (compose f acc) (1- n)))))
+             (if (< n 1)
+                 acc
+                 (iter f (compose f acc) (1- n)))))
     (iter f #'identity n)))
 
 (defvar dx 0.01)
@@ -33,11 +33,8 @@ exec ros -Q -- $0 "$@"
 (defun sample-func (x)
   (floor (* 5.1 (sin (* 3 x)))))
 
-(defun main (x)
-  (let ((a (read-from-string x)))
-    ;; (format t "~F " a)
-    ;; (format t "~F " (sample-func a))
-    ;; (format t "~F " (funcall (smoothing #'sample-func) a))
-    (format t "~F" (funcall (n-fold-smoothed #'sample-func 10) a))
-    (format t "~%")))
+(defun main ()
+  (let ((lis (loop for x from 0 to 3 by 0.01 collect x)))
+    (dolist (x lis)
+      (format t "~F,~F,~F~%" x (sample-func x) (funcall (n-fold-smoothed #'sample-func 10) x)))))
 ;;; vim: set ft=lisp lisp:
