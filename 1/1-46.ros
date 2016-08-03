@@ -11,7 +11,7 @@ exec ros -Q -- $0 "$@"
   (:export :my-sqrt :fixed-point))
 (in-package :ros.script.1-46.3674708608)
 
-(defun iterractive-improve (good-enoughp improve)
+(defun iterractive-improve-r (good-enoughp improve)
   "何かを計算するにあたって、
 答えに対する初期推測値から始めて、
 その推測値が十分によいかテストし、
@@ -24,8 +24,16 @@ exec ros -Q -- $0 "$@"
     (if (funcall good-enoughp x)
         x
         (funcall
-         (iterractive-improve good-enoughp improve)
+         (iterractive-improve-r good-enoughp improve)
          (funcall improve x)))))
+
+(defun iterractive-improve (good-enoughp improve)
+  "反復ver"
+  (labels ((iter (y)
+             (if (funcall good-enoughp y)
+                 y
+                 (funcall #'iter (funcall improve y)))))
+    #'iter))
 
 
 (defparameter *f-buffer*
