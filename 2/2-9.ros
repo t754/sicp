@@ -24,8 +24,8 @@ exec ros -Q -- $0 "$@"
                  (+ ( upper-bound x) (upper-bound y))))
 
 (defun sub-interval (x y)
-  (make-interval (- (lower-bound x) (upper-bound y))
-                 (- (lower-bound y) (upper-bound x))))
+  (make-interval (- (lower-bound x) (lower-bound y))
+                 (- (upper-bound x) (upper-bound y))))
 
 (defun mul-interval (x y)
   (let ((p1 (* (lower-bound x) (lower-bound y)))
@@ -63,10 +63,10 @@ exec ros -Q -- $0 "$@"
 
 (defun my-rand-test ()
   (let ((randlis
-         (list (- (random 1000) 500)
-               (- (random 1000) 500)
-               (- (random 1000) 500)
-               (- (random 1000) 500)))
+         (list (* 1.0 (random 1000))
+               (* 1.0 (random 1000))
+               (* 1.0 (random 1000))
+               (* 1.0 (random 1000))))
         (func-pair-list
          (list (cons #'+ #'add-interval)
                (cons #'- #'sub-interval)
@@ -76,19 +76,25 @@ exec ros -Q -- $0 "$@"
            (cons
             (make-interval  (nth 0 randlis) (nth 1 randlis))
             (make-interval  (nth 2 randlis) (nth 3 randlis)))))
-      (print interval-pair)
+      (format t "A ::~s~%" (car interval-pair))
+      (format t "B ::~s~%" (cdr interval-pair))
       (dolist (fs func-pair-list)
-        (print (test-width-interval (car interval-pair) (cdr interval-pair)
-                                    (car fs) (cdr fs)))))))
+        (format t "~s :: ~s~%" (car fs)
+                (test-width-interval (car interval-pair) (cdr interval-pair)
+                                     (car fs) (cdr fs)))))))
+
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (dolist (s-exp
-            '((sub-interval (make-interval 2 1)
-               (make-interval -1 4))
-              (sub-interval (make-interval 1 0)
-               (make-interval 4 9))
-              (sub-interval (make-interval 1 2)
-               (make-interval 4 3))))
-    (format t "~S => ~S~%" s-exp (eval s-exp))))
+  (setf *random-state* (make-random-state t))
+  (my-rand-test))
+  ;; (dolist (s-exp
+  ;;           '((sub-interval (make-interval 2 1)
+  ;;              (make-interval -1 4))
+  ;;             (sub-interval (make-interval 1 0)
+  ;;              (make-interval 4 9))
+  ;;             (sub-interval (make-interval 1 2)
+  ;;              (make-interval 4 3))))
+  ;;   (format t "~S => ~S~%" s-exp (eval s-exp)))
+
 ;;; vim: set ft=lisp lisp:
