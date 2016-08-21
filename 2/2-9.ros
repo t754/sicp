@@ -45,13 +45,6 @@ exec ros -Q -- $0 "$@"
    2))
 
 
-(+ (width-interval (make-interval -1 4))
-   (width-interval  (make-interval 2 1))
-   )
-(width-interval
- (add-interval (make-interval -1 4) (make-interval 2 1)))
-
-
 (defun test-width-interval (x y func1 func2)
   (cons
    (funcall func1
