@@ -13,7 +13,9 @@ exec ros -Q -- $0 "$@"
 
 
 (defun add-1 (n)
-  (lambda (f) (lambda (x) (funcall f  (funcall (funcall n f) x)))))
+  (lambda (f) (lambda (x)
+                (funcall f
+                         (funcall (funcall n f) x)))))
 
 (defvar zero
   (lambda (f)
@@ -29,6 +31,22 @@ exec ros -Q -- $0 "$@"
     (lambda (x)
       (funcall f (funcall f x )))))
 
+(defvar three
+  (lambda (f)
+    (lambda (x)
+      (funcall f (funcall f (funcall f x ))))))
+
+(defun times (n m)
+  (lambda (f)
+    (lambda (x)
+      (funcall (funcall m (funcall n f)) x))))
+
+(defun mplus (n m)
+  (lambda (f)
+    (lambda (x)
+      (funcall  (funcall m f)
+                (funcall (funcall n f) x)))))
+
 
 (defun main (&rest argv)
   (declare (ignorable argv))
@@ -37,6 +55,13 @@ exec ros -Q -- $0 "$@"
               (funcall (funcall (add-1 zero) #'1+) 0)
               (funcall (funcall (add-1 (add-1 zero)) #'1+) 0)
               (funcall (funcall one #'1+) 0)
-              (funcall (funcall two #'1+) 0)))
+              (funcall (funcall two #'1+) 0)
+              (funcall (funcall (mplus one one) #'1+)     0)
+              (funcall (funcall (mplus one two) #'1+)     0)
+              (funcall (funcall (times zero two) #'1+)    0)
+              (funcall (funcall (mplus two two) #'1+)    0)
+              (funcall (funcall (times three three) #'1+) 0)
+              (funcall (funcall (times three two) #'1+)   0)
+              (funcall (funcall (times two three) #'1+)  0)))
     (format t "~S => ~S~%" s-exp (eval s-exp))))
 ;;; vim: set ft=lisp lisp:
