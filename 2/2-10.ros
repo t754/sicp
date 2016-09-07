@@ -1,0 +1,83 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-10.3680054056
+  (:use :cl))
+(in-package :ros.script.2-10.3680054056)
+
+(defun make-interval (a b)
+  (cons a b))
+(defun upper-bound (x)
+  (max (car x) (cdr x)))
+(defun lower-bound (x)
+  (min (car x) (cdr x)))
+
+(defun add-interval (x y)
+  (make-interval (+ ( lower-bound x) (lower-bound y))
+                 (+ ( upper-bound x) (upper-bound y))))
+
+(defun sub-interval (x y)
+  (make-interval (- (lower-bound x) (lower-bound y))
+                 (- (upper-bound x) (upper-bound y))))
+
+(defun mul-interval (x y)
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+
+(defun div-interval (x y)
+  (if (and (<= 0 (* (upper-bound x) (lower-bound x)))
+           (<= 0 (* (upper-bound y) (lower-bound y))))
+      (mul-interval x (make-interval (/ 1.0 (upper-bound y))
+                                     (/ 1.0 (lower-bound y))))
+      (format *error-output* "error :: 0 またぎだ!! A:~s B:~s" x y)))
+
+(defun width-interval (interval)
+  (/
+   (- (upper-bound interval) (lower-bound interval))
+   2))
+
+
+(defun test-width-interval (x y func1 func2)
+  (cons
+   (funcall func1
+            (width-interval x)
+            (width-interval y))
+   (width-interval (funcall func2
+                            x y))))
+
+
+
+(defun my-rand-test ()
+  (let ((randlis)
+        (func-pair-list
+         (list (cons #'+ #'add-interval)
+               (cons #'- #'sub-interval)
+               (cons #'* #'mul-interval)
+               (cons #'/ #'div-interval))))
+    (dotimes (rand 4)
+      (push (- (* 1.0 (random 1000)) 500) randlis))
+    (let ((interval-pair
+           (cons
+            (make-interval  (nth 0 randlis) (nth 1 randlis))
+            (make-interval  (nth 2 randlis) (nth 3 randlis)))))
+      (format t "A ::~s~%" (car interval-pair))
+      (format t "B ::~s~%" (cdr interval-pair))
+      (dolist (fs func-pair-list)
+        (format t "~s :: ~s~%" (car fs)
+                (test-width-interval
+                 (car interval-pair) (cdr interval-pair)
+                 (car fs) (cdr fs)))))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (my-rand-test))
+;;; vim: set ft=lisp lisp:
