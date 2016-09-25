@@ -1,0 +1,26 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-18.3683810598
+  (:use :cl)
+  (:shadow reverse))
+(in-package :ros.script.2-18.3683810598)
+
+(defun reverse (lis)
+  (labels ((iter-reverse (src dst)
+             (if (null src)
+                 dst
+                 (iter-reverse (cdr src) (cons (car src) dst)))))
+    (iter-reverse lis nil)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (s-exp '((reverse (list 1 2 3 4))
+                   (reverse (list "a" "b" "c"))))
+    (format t "~S => ~S~%" s-exp (eval s-exp))))
+;;; vim: set ft=lisp lisp:
