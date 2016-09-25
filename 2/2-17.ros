@@ -1,0 +1,23 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.2-17.3683801745
+  (:use :cl))
+(in-package :ros.script.2-17.3683801745)
+
+(defun last-pair (lis)
+  (cond ((null lis) nil)
+        ((null (cdr lis)) (car lis))
+        (t (last-pair (cdr lis)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (dolist (s-exp '((last-pair (list 1 2 3 4))
+                   (last-pair (list "a" "b" "c"))))
+    (format t "~S => ~S~%" s-exp (eval s-exp))))
+;;; vim: set ft=lisp lisp:
