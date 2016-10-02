@@ -25,7 +25,7 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (setq printv:*default-printv-output* *standard-output*)
+  (setq printv:*printv-output* *standard-output*)
   (printv:printv
    (square-list (list 1 2 3 4))
    (square-list2 (list 1 2 3 4))))
