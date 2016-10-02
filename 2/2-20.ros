@@ -4,11 +4,13 @@
 exec ros -Q -- $0 "$@"
 |#
 (progn ;;init forms
-  ;; #+quicklisp (ql:quickload '() :silent t)
+  #+quicklisp   (ql:quickload '("swank" "printv") :silent t)
   )
+
 
 (defpackage :ros.script.2-20.3683986688
   (:use :cl))
+
 (in-package :ros.script.2-20.3683986688)
 
 (defun even? (n)
@@ -19,7 +21,6 @@ exec ros -Q -- $0 "$@"
       (even? val)        ;; even?
       (not (even? val))));; odd?
 
-;; (cons (car lis) (same-parity x (cdr lis)))
 (defun same-parity (x &rest lis)
   (labels ((iter (srclist val reslist)
              (if (null val)
@@ -29,24 +30,9 @@ exec ros -Q -- $0 "$@"
                      (iter (cdr srclist) (car srclist) reslist)))))
     (cons x (iter (cdr lis) (car lis) nil))))
 
-
-;; (labels ((iter (src dst)
-;;            (if (null src)
-;;                dst
-;;                (iter-reverse (cdr src) (cons (car src) dst))))))
-;;        ;;       (iter (cons ))
-;;        ;;       )))
-;;        ;; )
-;;   ;; (labels ((iter (lis result)
-;;   ;;            (if (null lis)
-;;   ;;                nil
-;;   ;;                (if (even? x)
-
-;;   ;;                    ))))))
-;; (same-parity 1 2 3 4 5 6 7)
-;; (same-parity 2 3 4 5 6 7)
-;; (defun main (&rest argv)
-;;   (declare (ignorable argv))
-
-;; )
-;;; vim: set ft=lisp lisp:
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (:printv
+   (same-parity 1 2 3 4 5 6 7)
+   (same-parity 2 3 4 5 6 7)))
