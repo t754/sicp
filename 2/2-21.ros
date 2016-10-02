@@ -1,0 +1,32 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '("swank" "printv") :silent t)
+  )
+
+(defpackage :ros.script.2-21.3684413819
+  (:use :cl))
+(in-package :ros.script.2-21.3684413819)
+
+(defun square (x)
+  (* x x))
+
+(defun square-list (items)
+  (if (null items)
+      nil
+      (cons
+       (square (car items))
+       (square-list (cdr items)))))
+(defun square-list2 (items)
+  (mapcar #'square items))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*default-printv-output* *standard-output*)
+  (printv:printv
+   (square-list (list 1 2 3 4))
+   (square-list2 (list 1 2 3 4))))
+;;; vim: set ft=lisp lisp:
