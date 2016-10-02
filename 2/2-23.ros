@@ -1,0 +1,25 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '("swank" "printv") :silent t))
+
+(defpackage :ros.script.2-23.3684415609
+  (:use :cl))
+(in-package :ros.script.2-23.3684415609)
+
+
+(defun for-each (fn lis)
+  (when (not (null  lis))
+     (funcall fn (car lis))
+     (for-each fn (cdr lis))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (:printv
+   (for-each (lambda (x) (print x))
+             (list 57 321 88))))
+;;; vim: set ft=lisp lisp:
