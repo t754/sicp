@@ -1,0 +1,45 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros  -Q -- $0 "$@"
+|#
+
+(progn ;;init forms
+  ;; (ql:quickload :printv)
+  )
+
+(defpackage :ros.script.2-19.3683974587
+  (:use :cl))
+(in-package :ros.script.2-19.3683974587)
+
+(defvar us-coins (list 50 25 10 5 1))
+(defvar uk-coins (list 100 50 20 10 5 2 1 0.5))
+
+(defun first-denomination (values)
+  (car values))
+
+(defun except-first-denomination (values)
+  (cdr values))
+
+(defun no-more? (values)
+  (null values))
+
+(defun cc (amount coin-values)
+  (cond ((= amount 0) 1)
+        ((or (< amount 0) (no-more? coin-values)) 0)
+        (t
+         (+ (cc amount
+                (except-first-denomination
+                 coin-values))
+            (cc (- amount (first-denomination
+                           coin-values))
+                coin-values)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+    (dolist (s-exp '((cc 100 us-coins)
+                     (cc 100 (reverse us-coins))
+                     (cc 100 uk-coins)
+                     (cc 100 (reverse uk-coins))))
+      (format t "~S => ~S~%" s-exp (eval s-exp))))
+;;; vim: set ft=lisp lisp:
