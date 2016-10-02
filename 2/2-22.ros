@@ -1,0 +1,49 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '("swank" "printv") :silent t)
+  )
+
+(defpackage :ros.script.2-22.3684414859
+  (:use :cl))
+(in-package :ros.script.2-22.3684414859)
+
+(defun square (x)
+  (* x x))
+
+(defun square-list (items)
+  "it's bug !"
+    (labels
+        ((iter (things answer)
+           (if (null things)
+               answer
+               (iter (cdr things)
+                     (cons (square (car things))
+                           answer)))))
+      (iter items nil)))
+
+(defun square-list2 (items)
+  "more bug !"
+    (labels
+        ((iter (things answer)
+           (if (null things)
+               answer
+               (iter (cdr things)
+                     (cons answer
+                           (square (car things)))))))
+      (iter items nil)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   "it's reverse"
+   (square-list (list 1 2 3 4))
+   :hr
+   "↓it's more bug"
+   (square-list2 (list 1 2 3 4))))
+;;; vim: set ft=lisp lisp:
