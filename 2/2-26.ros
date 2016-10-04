@@ -1,0 +1,24 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-26.3684592573
+  (:use :cl))
+(in-package :ros.script.2-26.3684592573)
+
+(defvar x (list 1 2 3))
+(defvar y (list 4 5 6))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (append x y)
+   (cons x y)
+   (list x y)))
+
+;;; vim: set ft=lisp lisp:
