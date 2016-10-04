@@ -1,0 +1,33 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-27.3684592405
+  (:use :cl)
+  (:shadow reverse))
+(in-package :ros.script.2-27.3684592405)
+
+(defun reverse (lis)
+  (labels ((iter-reverse (src dst)
+             (if (null src)
+                 dst
+                 (iter-reverse (cdr src) (cons (car src) dst)))))
+    (iter-reverse lis nil)))
+
+
+(defun deep-reverse (x)
+  (reverse  (mapcar  (lambda (lis) (if (listp lis) (deep-reverse lis) lis)) x)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (deep-reverse '((1 2) (3 4)))
+   (deep-reverse '((1 2) ((3 4 5) 6 7)))
+   (deep-reverse '(1 (2 (3 (4 (5 (6 7)))))))))
+
+;;; vim: set ft=lisp lisp:
