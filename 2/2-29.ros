@@ -1,0 +1,73 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-29.3684649076
+  (:use :cl))
+(in-package :ros.script.2-29.3684649076)
+
+(defun make-mobile (ll rr)
+  (list ll rr))
+
+(defun make-branch (len struct)
+  (list len struct))
+
+(defun left-brranch (mobile)
+  (car mobile))
+
+(defun right-brranch (mobile)
+  (cadr mobile))
+
+(defun branch-length (branch)
+  (car branch))
+
+(defun branch-structure (branch)
+  (cadr branch))
+
+(defun total-weight (mobile)
+  (if (numberp mobile)
+      mobile
+      (let ((l-mobi (branch-structure (left-brranch mobile)))
+            (r-mobi (branch-structure (right-brranch mobile))))
+        ;; (cond ((and (numberp l-mobi) (numberp r-mobi))  (+ l-mobi r-mobi))
+        ;;       ((numberp l-mobi)  (+ l-mobi (total-weight r-mobi)))
+        ;;       ((numberp r-mobi)  (+ (total-weight l-mobi) r-mobi))
+        ;;      (t
+        (+ (total-weight l-mobi) (total-weight r-mobi)))))
+;;)
+
+
+(defun baranced (mobile)
+  (if (numberp mobile)
+      t
+      (let ((l-mobi (branch-structure (left-brranch mobile)))
+            (l-len (branch-length (left-brranch mobile)))
+            (r-mobi (branch-structure (right-brranch mobile)))
+            (r-len (branch-length (right-brranch mobile))))
+        (cond ((and (numberp l-mobi) (numberp r-mobi))
+               (= (* l-len l-mobi)
+                  (* r-len r-mobi)))
+              ((numberp l-mobi)
+               (and (= (* l-len l-mobi)
+                       (* r-len (total-weight r-mobi)))
+                    (barancedp r-mobi)))
+              ((numberp r-mobi)
+               (and (= (* r-len r-mobi)
+                       (* l-len (total-weight l-mobi)))
+                    (barancedp l-mobi)))
+              (t (and
+                  (barancedp l-mobi)
+                  (barancedp r-mobi)))))))
+
+;; (defun make-mobile (ll rr)
+;;   (cons ll rr))
+;; (defun make-branch)
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv)))
+;;; vim: set ft=lisp lisp:
