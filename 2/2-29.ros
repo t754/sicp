@@ -33,12 +33,8 @@ exec ros -Q -- $0 "$@"
       mobile
       (let ((l-mobi (branch-structure (left-brranch mobile)))
             (r-mobi (branch-structure (right-brranch mobile))))
-        ;; (cond ((and (numberp l-mobi) (numberp r-mobi))  (+ l-mobi r-mobi))
-        ;;       ((numberp l-mobi)  (+ l-mobi (total-weight r-mobi)))
-        ;;       ((numberp r-mobi)  (+ (total-weight l-mobi) r-mobi))
-        ;;      (t
         (+ (total-weight l-mobi) (total-weight r-mobi)))))
-;;)
+
 
 
 (defun barancedp (mobile)
