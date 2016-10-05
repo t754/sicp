@@ -56,6 +56,8 @@ exec ros -Q -- $0 "$@"
                        (* l-len (total-weight l-mobi)))
                     (barancedp l-mobi)))
               (t (and
+                  (= (* r-len (total-weight l-mobi))
+                     (* l-len (total-weight l-mobi)))
                   (barancedp l-mobi)
                   (barancedp r-mobi)))))))
 
@@ -67,8 +69,16 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
    (barancedp
-    (make-mobile (make-branch 4 (make-mobile (make-branch 2 3) (make-branch 2 3)))
-                 (make-branch 4 6)))
+    (make-mobile (make-branch 4
+                              (make-mobile (make-branch 2 3)
+                                           (make-branch 2 3)))
+                 (make-branch 2 12)))
 
+(barancedp
+ (make-mobile (make-branch 2 3)
+              (make-branch 1
+                           (make-mobile (make-branch 1 3)
+                                        (make-branch  3)))))
+)
 )
 ;;; vim: set ft=lisp lisp:
