@@ -41,13 +41,13 @@ exec ros -Q -- $0 "$@"
 ;;)
 
 
-(defun baranced (mobile)
+(defun barancedp (mobile)
   (if (numberp mobile)
       t
       (let ((l-mobi (branch-structure (left-brranch mobile)))
-            (l-len (branch-length (left-brranch mobile)))
+            (l-len  (branch-length    (left-brranch mobile)))
             (r-mobi (branch-structure (right-brranch mobile)))
-            (r-len (branch-length (right-brranch mobile))))
+            (r-len  (branch-length    (right-brranch mobile))))
         (cond ((and (numberp l-mobi) (numberp r-mobi))
                (= (* l-len l-mobi)
                   (* r-len r-mobi)))
@@ -69,5 +69,10 @@ exec ros -Q -- $0 "$@"
 
 
 (defun main (&rest argv)
-  (declare (ignorable argv)))
+  (declare (ignorable argv))
+   (barancedp
+    (make-mobile (make-branch 4 (make-mobile (make-branch 2 3) (make-branch 2 3)))
+                 (make-branch 4 6)))
+
+)
 ;;; vim: set ft=lisp lisp:
