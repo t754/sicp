@@ -1,0 +1,36 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+
+(defpackage :ros.script.2-31.3684921980
+  (:use :cl))
+(in-package :ros.script.2-31.3684921980)
+
+
+(defun tree-map (fn lis)
+  (labels
+      ((iter (x fst)
+         (let ((fst-result (cond ((listp fst)
+                                  (if (not (null fst))
+                                      (iter fst (car fst))))
+                                 (t (funcall fn fst)))))
+           (if (not (null fst-result))
+               (cons fst-result (iter (cdr x) (cadr x)))))))
+    (iter lis (car lis))))
+
+(defun square (x)
+  (* x x))
+
+(defun square-tree (tree) (tree-map #'square tree))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (square-tree '(1 (2 (3 4 7) (5 8))))))
+;;; vim: set ft=lisp lisp:
