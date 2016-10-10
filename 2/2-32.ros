@@ -1,0 +1,26 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-32.3684922797
+  (:use :cl))
+(in-package :ros.script.2-32.3684922797)
+
+(defun subsets (s)
+  (if (null s)
+      (list nil)
+      (let ((rest (subsets (cdr s))))
+        (append rest (mapcar (lambda (x) (append (list (car s)) x))
+                      rest)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (subsets '(1 2 3))
+   (subsets '(a b c d))))
+;;; vim: set ft=lisp lisp:
