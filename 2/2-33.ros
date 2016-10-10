@@ -1,0 +1,41 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-33.3685095910
+  (:use :cl)
+  (:shadow :map :append :length))
+
+(in-package :ros.script.2-33.3685095910)
+
+(defun accumulate (op initial sequence)
+    (if (null sequence)
+        initial
+        (funcall op (car sequence)
+            (accumulate op initial (cdr sequence)))))
+
+(defun map (p sequence)
+  (accumulate (lambda (x y) (cons (funcall p x) y)) nil sequence))
+
+(defun append (seq1 seq2)
+  (accumulate #'cons seq2 seq1))
+
+(defun length (sequence)
+  (accumulate (lambda (x y)
+                (declare (ignorable x))
+                (1+ y))
+              0 sequence))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (map (lambda (x) (* x x)) '(1 2 3 4))
+   (map (lambda (x) (* x x)) '(100 20))
+   (append '(1 2 3) '(100 20))
+   (length '(1 2 3 100 20))))
+;;; vim: set ft=lisp lisp:
