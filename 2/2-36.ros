@@ -19,8 +19,8 @@ exec ros -Q -- $0 "$@"
 (defun accumulate-n (op init seqs)
     (if (null (car seqs))
         nil
-        (cons (accumulate   op init (mapcar (lambda (x) (car x)) seqs))
-              (accumulate-n op init (mapcar (lambda (x) (cdr x)) seqs)))))
+        (cons (accumulate   op init (mapcar #'car seqs))
+              (accumulate-n op init (mapcar #'cdr seqs)))))
 
 
 
