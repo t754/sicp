@@ -1,0 +1,33 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-35.3685102221
+  (:use :cl))
+(in-package :ros.script.2-35.3685102221)
+
+(defun accumulate (op initial sequence)
+    (if (null sequence)
+        initial
+        (funcall op (car sequence)
+            (accumulate op initial (cdr sequence)))))
+
+(defun count-leaves (tree)
+  (accumulate #'+
+              0
+              (mapcar (lambda (x) (if (listp x)  (count-leaves x) 1)) tree)))
+
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (count-leaves '(1 (2 (3 4)) 5 1))
+   (count-leaves '(a b c))
+   (count-leaves '(e (((f)) ((g) h) i) j))))
+;;; vim: set ft=lisp lisp:
