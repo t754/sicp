@@ -1,0 +1,32 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-36.3685260502
+  (:use :cl))
+(in-package :ros.script.2-36.3685260502)
+
+(defun accumulate (op initial sequence)
+    (if (null sequence)
+        initial
+        (funcall op (car sequence)
+            (accumulate op initial (cdr sequence)))))
+
+(defun accumulate-n (op init seqs)
+    (if (null (car seqs))
+        nil
+        (cons (accumulate   op init (mapcar (lambda (x) (car x)) seqs))
+              (accumulate-n op init (mapcar (lambda (x) (cdr x)) seqs)))))
+
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (accumulate-n #'+ 0 '((1 2 3) (4 5 6) (7 8 9) (10 11 12)))))
+;;; vim: set ft=lisp lisp:
