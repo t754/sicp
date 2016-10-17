@@ -1,0 +1,54 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-37.3685261482
+  (:use :cl)
+  (:shadow :map))
+(in-package :ros.script.2-37.3685261482)
+
+
+(defun accumulate (op initial sequence)
+  (if (null sequence)
+      initial
+      (funcall op (car sequence)
+               (accumulate op initial (cdr sequence)))))
+
+
+(defun accumulate-n (op init seqs)
+  (if (null (car seqs))
+      nil
+      (cons (accumulate   op init (mapcar #'car seqs))
+            (accumulate-n op init (mapcar #'cdr seqs)))))
+
+(defun transpose (m)
+  (accumulate-n 'cons 'nil m))
+
+(defun dot-product (v w)
+  (accumulate #'+ 0
+              (mapcar #'* v w)))
+
+(defun matrix-*-vector (m v)
+  (mapcar #'(lambda (n) (dot-product n v)) m))
+
+
+(defun matirix-*-matrix (m n)
+  (let ((cols (transpose n)))
+    (mapcar #'(lambda (l) (matrix-*-vector cols l)) m)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (dot-product '(1 2) '(3 4))
+   (matrix-*-vector '((1 2) (3 4) (5 6)) '(2 3))
+   (matirix-*-matrix '((1 -1 2)
+                       (0 -3 1))
+                     '((2)
+                       (1)
+                       (0)))))
+;;; vim: set ft=lisp lisp:
