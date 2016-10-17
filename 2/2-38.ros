@@ -10,11 +10,6 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.2-38.3685707324)
 
-(defun accumulate (op initial sequence)
-  (if (null sequence)
-      initial
-      (funcall op (car sequence)
-               (accumulate op initial (cdr sequence)))))
 
 (defun fold-left (op initial sequence)
   (labels ((iter (result rest)
