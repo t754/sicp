@@ -1,0 +1,57 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t)
+  (load "./prime.ros"))
+
+(defpackage :ros.script.2-40.3685709149
+  (:use :cl :ros.script.prime.3685802556))
+(in-package :ros.script.2-40.3685709149)
+
+(defun accumulate (op initial sequence)
+  (if (null sequence)
+      initial
+      (funcall op (car sequence)
+               (accumulate op initial (cdr sequence)))))
+
+(defun flatmap (proc seq)
+  (accumulate #'append nil (mapcar proc seq)))
+
+(defun enumerate-interval (low high)
+  (if (> low high)
+      nil
+      (cons low (enumerate-interval (1+ low) high))))
+
+
+(defun unique-pairs (n)
+    (flatmap #'(lambda (x)
+             (mapcar #'(lambda (y) (list x y))
+                     (enumerate-interval 1 (1- x))))
+             (enumerate-interval 1 n)))
+
+(defun filter (pred seq)
+  (cond ((null seq) nil)
+        ((funcall pred (car seq))
+         (cons (car seq)
+               (filter pred (cdr seq))))
+        (t (filter pred (cdr seq)))))
+
+(defun prime-sum? (pair)
+    (prime? (+ (car pair) (cadr pair))))
+(defun make-pair-sum (pair)
+  (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
+
+(defun prime-sum-pairs (n)
+  (mapcar #'make-pair-sum
+   (filter #'prime-sum? (unique-pairs n))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (unique-pairs 4)
+   (prime-sum-pairs 6)))
+;;; vim: set ft=lisp lisp:
