@@ -1,0 +1,57 @@
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  )
+
+(defpackage :ros.script.prime.3685802556
+  (:use :cl)
+  (:export :prime?))
+(in-package :ros.script.prime.3685802556)
+
+(defun square (x) (* x x))
+
+(defun even? (n)
+  (= (rem n 2) 0))
+
+(defun expmod (base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (rem
+          (square (expmod base (/ exp 2) m))
+          m))
+        (t
+         (rem
+          (* base (expmod base (- exp 1) m))
+          m))))
+(defun mycheck (val n)
+
+  (or (= val 1) (= val (1- n))))
+
+(defun miller-rabin-core(base r d m)
+  (cond ((mycheck
+          (expmod base (* d (expt 2 r)) m)
+          m)
+         t)
+        ((even? d) (miller-rabin-core base (1+ r) (/ d 2) m))
+        (t nil)))
+
+(defun miller-rabin-test (a n)
+  "(A^(N-1))%N === 1"
+  (miller-rabin-core a 0 (1- n) n))
+
+(defconstant retry-times 128)
+
+(defun random-test (n)
+  (if (<= n 2)
+      t
+      (labels ((tmp-func (times)
+                 (cond ((< times 0) t)
+                       ((miller-rabin-test (1+ (random (1- n))) n)
+                        (tmp-func (1- times)))
+                       (t nil))))
+        (tmp-func retry-times))))
+(defun prime? (x)
+  (random-test x))
+;;; vim: set ft=lisp lisp:
