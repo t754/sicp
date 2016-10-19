@@ -18,16 +18,26 @@ exec ros -Q -- $0 "$@"
                  (iter (funcall op result (car rest))
                        (cdr rest)))))
     (iter initial sequence)))
-(defun fold-right (op initial sequence)
+(defun accumulate (op initial sequence)
   (if (null sequence)
       initial
-      (fold-right op
-                  (funcall op (car sequence) initial)
-                  (cdr sequence))))
+      (funcall op (car sequence)
+               (accumulate op initial (cdr sequence)))))
+(defun fold-right (op initial sequence)
+  (accumulate op initial sequence))
+  ;; (if (null sequence)
+  ;;     initial
+  ;;     (fold-right op
+  ;;                 (funcall op (car sequence) initial)
+  ;;                 (cdr sequence))))
 
 (defun r-reverse (seq)
-  (fold-right #'(lambda (x y) (cons x y)) nil seq))
+  (fold-right
+   #'(lambda (x y)
+                       (append  y (list x)))
+   nil seq))
 
+(r-reverse '(1 2 3 4))
 (defun l-reverse (seq)
   (fold-left #'(lambda (x y) (cons y x)) nil seq))
 
