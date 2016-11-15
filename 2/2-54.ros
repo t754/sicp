@@ -1,0 +1,42 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+(defpackage :ros.script.2-54.3687075578
+  (:use :cl))
+(in-package :ros.script.2-54.3687075578)
+
+(defun equal? (a b)
+  (cond ((and (null a)
+              (null b))
+         t)
+        ((and (numberp a)
+              (numberp b))
+         (= a b))
+        ((and (symbolp a)
+              (symbolp b))
+         (eq a b))
+        ((not
+          (and (consp a)
+               (consp b)))
+         nil)
+        ((not (equal? (car a)
+                      (car b)))
+         nil)
+        ((equal? (cdr a)
+                 (cdr b))
+         t)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (equal? '(this is a list) '(this is a list))
+   (equal? '(this is (1 2 sym)) '(this is (1 2 sym)))
+   (equal? '(this is a list) '(this (is a) list))))
+;;; vim: set ft=lisp lisp:
