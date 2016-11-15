@@ -1,0 +1,66 @@
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros  -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t)
+  (load "./math-diff.ros"))
+
+(defpackage :ros.script.2-56.3688215812
+  (:use :cl :ros.script.math-diff.3688216105)
+  (:shadow :deriv)
+  (:export :deriv))
+(in-package :ros.script.2-56.3688215812)
+
+(defun exponentiation? (x)
+  "べき乗か?"
+  (and (consp x)
+       (eq (car x) '**)))
+
+(defun base (p)
+  "底"
+  (cadr p))
+
+(defun exponent (p)
+  "べき指数"
+  (caddr p))
+
+(defun make-exponentiation (b n)
+  "べき乗 b**n"
+  (cond ((=number? n 0) 1)
+        ((=number? n 1) n)
+        (t (list '** b n))))
+
+(defun deriv (exp var)
+  (cond ((numberp exp) 0)
+        ((variable? exp)
+         (if (same-variable? exp var)
+             1
+             0))
+        ((sum? exp)
+         (make-sum (deriv (addend exp) var)
+                   (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+          (make-product (multiplier exp)
+                        (deriv (multiplicand exp) var))
+          (make-product (deriv (multiplier exp) var)
+                        (multiplicand exp))))
+        ((exponentiation? exp)
+         (make-product
+          (make-product (exponent exp)
+                        (make-exponentiation
+                         (base exp)
+                         (make-sum  (exponent exp) -1)))
+          (deriv (base exp) var)))
+        (t
+         (error "unknown expression type: DERIV::~S" exp))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (deriv '(** x 0) 'x)
+   (deriv '(** x 1) 'x)
+   (deriv '(** x y) 'x)))
+;;; vim: set ft=lisp lisp:
