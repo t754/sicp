@@ -12,47 +12,11 @@ exec ros  -Q -- $0 "$@"
   (:shadow :make-sum))
 (in-package :ros.script.2-57.3688223098)
 
-;; (defun make-sum (a1 lis)
-;;   "和"
-;;   (cond ;; ((=number? a1 0) a2)
-;;         ((null lis) a1)
-;;         ((=number? lis 0) a1)
-;;         ((not (numberp a1))
-
-;;         ((numberp lis)
-;;          (+ a1 lis))
-;;         ((and (=number? a1 0)
-;;               (consp lis)
-;;               ))
-;;         ((consp lis)
-;;          (+ a1 (make-sum (car lis) (cdr lis))))
-;;         (t (list '+ a1 lis))))
-
-
-;; (defun make-sum (a1 lis)
-;;   "和"
-;;   (labels ((iter-sum (accnum accsym lis)
-;;              (cond ((null lis)))))))
-;;                               accsym
-;;                               (cdr lis)))
-;;                    ((numberp (car lis))
-;;                     (iter-sum (* (car lis) accnum)
-;;                               accsym
-;;                               (cdr lis)))
-;;                    ((or (listp (car lis))
-;;                         (symbolp (car lis)))
-;;                     (iter-sum accnum
-;;                               (cons (car lis) accsym)
-;;                               (cdr lis))))))
-;;        (iter-sum 1 nil (append (list m1) lis))))
-
-
 (defun augend (s)
   "被加数は、残りの項の和"
   (if (null (cdddr s))
       (caddr s)
       (cons '+ (cddr s))))
-
 
 (defun multiplicand (p)
   "被乗数は、残りの項の積"
