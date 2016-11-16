@@ -9,7 +9,19 @@ exec ros  -Q -- $0 "$@"
 (defpackage :ros.script.2-56.3688215812
   (:use :cl :ros.script.math-diff.3688216105)
   (:shadow :deriv)
-  (:export :deriv))
+  (:export
+   :variable?
+   :same-variable?
+   :sum?
+   :addend
+   :augend
+   :make-sum
+   :product?
+   :multiplier
+   :multiplicand
+   :make-product
+   :=number?
+   :deriv))
 (in-package :ros.script.2-56.3688215812)
 
 (defun exponentiation? (x)
