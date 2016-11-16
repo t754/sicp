@@ -1,0 +1,110 @@
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(:swank :printv) :silent t))
+
+
+(defpackage :ros.script.math-diff.3688216105
+  (:use :cl)
+  (:export
+   :variable?
+   :same-variable?
+   :sum?
+   :addend
+   :augend
+   :make-sum
+   :product?
+   :multiplier
+   :multiplicand
+   :make-product
+   :=number?
+   :deriv))
+
+(in-package :ros.script.math-diff.3688216105)
+
+(defun variable? (x)
+  "変数は記号である。基本述語 symbol? で識別する。"
+  (symbolp x))
+
+(defun same-variable? (v1 v2)
+  "二つの変数は、それらを表現する記号が eq であれば等しい。"
+  (and (variable? v1)
+       (variable? v2)
+       (eq v1 v2)))
+
+(defun =number? (exp num)
+  "ある式が与えられた数値と等しいかどうか"
+  (and (numberp exp)
+       (= exp num)))
+
+(defun make-sum (a1 a2)
+  "和"
+  (cond ((=number? a1 0) a2)
+        ((=number? a2 0) a1)
+        ((and (numberp a1)
+              (numberp a2))
+         (+ a1 a2))
+        (t (list '+ a1 a2))))
+
+
+(defun make-product (m1 m2)
+  "積"
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+        ((=number? m1 1) m2)
+        ((=number? m2 1) m1)
+        ((and (numberp m1)
+              (numberp m2))
+         (* m1 m2))
+        (t (list '* m1 m2))))
+
+
+
+(defun sum? (x)
+  "和は、最初の要素が記号 + であるリストである。"
+  (and (consp x) (eq (car x) '+)))
+
+(defun addend (s)
+  "加数は、和のリストの二つ目の項である。"
+  (cadr s))
+
+(defun augend (s)
+  "被加数は、和のリストの三つ目の項である。"
+  (caddr s))
+
+(defun product? (x)
+  "積は、最初の要素が記号 * であるリストである。"
+  (and (consp x) (eq (car x) '*)))
+
+(defun multiplier (p)
+  "乗数は、積のリストの二つ目の項である。"
+  (cadr p))
+
+(defun multiplicand (p)
+  "被乗数は、積のリストの三つ目の項である。"
+  (caddr p))
+
+(defun deriv(exp var)
+  (cond ((numberp exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ((sum? exp) (make-sum (deriv (addend exp) var)
+                              (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+          (make-product (multiplier exp)
+                        (deriv (multiplicand exp) var))
+          (make-product (deriv (multiplier exp) var)
+                        (multiplicand exp))))
+        (t
+         (format *error-output* "unknown expression type: DERIV:: ~S" exp))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (deriv '(+ x 3) 'x)
+   (deriv '(* x y) 'x)
+   (deriv '(* (* x y) (+ x 3)) 'x)))
+
+;;; vim: set ft=lisp lisp:
