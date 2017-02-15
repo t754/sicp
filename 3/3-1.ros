@@ -1,0 +1,26 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+(defpackage :ros.script.3-1.3696163788
+  (:use :cl))
+(in-package :ros.script.3-1.3696163788)
+
+(defun make-accumulator (init-val)
+  (let ((acc init-val))
+    #'(lambda (ad)
+        (setq acc (+ acc ad)))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (defvar *A* (make-accumulator 5))
+   (funcall *A* 10)
+   (funcall *A* 10)))
+;;; vim: set ft=lisp lisp:
