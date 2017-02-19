@@ -1,0 +1,29 @@
+#!/bin/bash
+
+lisp-fmt() {
+    emacsclient -e "(progn (find-file \"$1\") (setq make-backup-files nil) (setq-default indent-tabs-mode nil) (indent-region (point-min) (point-max)) (save-buffer) (kill-buffer))" &>/dev/null
+}
+
+check-file-fmted() {
+    local tmp=$(mktemp)
+    cp $1 $tmp
+    lisp-fmt $tmp
+    local succ=0
+    if [[ $(sha1sum $1 | cut -d " " -f 1) == $(sha1sum $tmp | cut -d " " -f 1) ]] ; then
+        succ=0
+    else
+        echo "=================="
+        git diff $1 $tmp | cat
+        succ=1
+    fi
+    rm $tmp
+    return $succ
+}
+
+export -f lisp-fmt
+export -f check-file-fmted
+
+
+git diff --cached --name-only --diff-filter=A |\
+      grep -E ".*\.(ros|lisp)$" |\
+      xargs  -L1 -I@@ bash -c 'check-file-fmted "@@"'
