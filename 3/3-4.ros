@@ -1,0 +1,67 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+(indent-region (point-min) (point-max))
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-4.3696497255
+  (:use :cl))
+(in-package :ros.script.3-4.3696497255)
+
+(defun call-the-cops (&rest x)
+  (declare (ignorable x))
+"!!! CALL THE COPS !1!")
+
+(defun make-account (balance pass)
+  (let ((mistake-count 0)
+        (MISTAKE-LIMIT 7))
+    (labels ((withdraw (amount)
+               (if (>= balance amount)
+                   (progn (setq balance (- balance amount))
+                          balance)
+                   " Insufficient funds "))
+             (deposit (amount)
+               (setq balance (+ balance amount))
+               balance)
+             (incorrect-password (&rest x)
+               (declare (ignorable x))
+               "Incorrect password")
+             (dispatch (ps m)
+               (cond ((not (eq ps pass))
+                      (if (> mistake-count MISTAKE-LIMIT)
+                          #'call-the-cops
+                          (progn
+                            (incf mistake-count)
+                            #'incorrect-password)))
+                     (t (setq mistake-count 0)
+                        (cond ((eq m 'withdraw) #'withdraw)
+                              ((eq m 'deposit) #'deposit)
+                              (t (error " Unknown request : MAKE-ACCOUNT ~S" m)))))))
+      #'dispatch)))
+
+
+(defvar *acc*)
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   :hr
+   (setq *acc* (make-account 100 'secret-password))
+   (funcall (funcall *acc* 'secret-password 'withdraw) 40)
+   (funcall (funcall *acc* 'secret-password 'deposit) 21)
+   :hr
+   (funcall (funcall *acc* 'some-other-password 'withdraw) 50)
+   (funcall (funcall *acc* 'some-other-password 'deposit) 50)
+   (funcall (funcall *acc* 'jdfiosa 'withdraw) 50)
+   (funcall (funcall *acc* 'aaaaa 'withdraw) 50)
+   (funcall (funcall *acc* 'P@SSWORD 'withdraw) 50)
+   (funcall (funcall *acc* '1234 'withdraw) 50)
+   (funcall (funcall *acc* 'pass 'withdraw) 50)
+   (funcall (funcall *acc* '0000 'withdraw) 50)))
+;;; vim: set ft=lisp lisp:
+;;;
