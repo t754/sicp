@@ -1,0 +1,75 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-6.3696678800
+  (:use :cl))
+(in-package :ros.script.3-6.3696678800)
+
+(defparameter random-init 123)
+
+(defun rand-update (x)
+  "custom xorshift 32"
+  (setq x (logxor x (ash x 13)))
+  (setq x (logxor x (ash x -17)))
+  (setq x (logxor x (ash x 5)))
+  (logand x (- (ash 1 32) 1)))
+
+
+
+(defparameter rand
+  (let ((x random-init))
+    (lambda (m)
+      (cond ((eq m 'reset)
+             (lambda (val) (setq x val)))
+            ((eq m 'generate)
+             (setq x (rand-update x))
+             x)
+            (t (error "need argment"))))))
+
+
+(defun monte-carlo (trials experiment)
+  (labels ((iter (trials-remaining trials-passed)
+             (cond
+               ((= trials-remaining 0)
+                (/ trials-passed trials))
+               ((funcall experiment)
+                (iter (- trials-remaining 1)
+                      (+ trials-passed 1)))
+               (t
+                (iter (- trials-remaining 1) trials-passed)))))
+    (iter trials 0)))
+
+(defun cesaro-test ()
+  (= (gcd (funcall rand 'generate) (funcall rand 'generate)) 1))
+
+(defun estimate-pi (trials)
+  (sqrt (/ 6 (monte-carlo trials #'cesaro-test))))
+
+
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (funcall (funcall rand 'reset) 192)
+   (funcall rand 'generate)
+   (funcall rand 'generate)
+   (funcall rand 'generate)
+   (funcall (funcall rand 'reset) 0)
+   (funcall rand 'generate)
+   (funcall rand 'generate)
+   (funcall rand 'generate)
+   (funcall (funcall rand 'reset) -1234)
+   (estimate-pi 1000)
+  (funcall (funcall rand 'reset) 98765)
+   (estimate-pi 1000)
+   ))
+;;; vim: set ft=lisp lisp:
