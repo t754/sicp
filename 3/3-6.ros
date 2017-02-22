@@ -69,7 +69,7 @@ exec ros -Q -- $0 "$@"
    (funcall rand 'generate)
    (funcall (funcall rand 'reset) -1234)
    (estimate-pi 1000)
-  (funcall (funcall rand 'reset) 98765)
+   (funcall (funcall rand 'reset) 98765)
    (estimate-pi 1000)
    ))
 ;;; vim: set ft=lisp lisp:
