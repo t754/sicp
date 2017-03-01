@@ -1,0 +1,77 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  (setq *print-circle* t)
+  )
+
+(defpackage :ros.script.3-7.3696762006
+  (:use :cl))
+(in-package :ros.script.3-7.3696762006)
+
+(defun make-account (balance pass)
+  (let ((pass-list (list pass)))
+    (labels ((withdraw (amount)
+               (if (>= balance amount)
+                   (progn (setq balance (- balance amount))
+                          balance)
+                   " Insufficient funds "))
+             (deposit (amount)
+               (setq balance (+ balance amount))
+               balance)
+             (add-password (new-pass)
+               (push new-pass pass-list)
+               t)
+             (dispatch (ps m)
+               (cond ((null (member ps pass-list)) (error  "Incorrect password"))
+                     ((eq m 'add-password) #'add-password) ;; add
+                     ((eq m 'withdraw) #'withdraw)
+                     ((eq m 'deposit) #'deposit)
+                     (t (error " Unknown request : MAKE-ACCOUNT ~S" m)))))
+      #'dispatch)))
+
+(defun make-joint (acc acc-pass joint-pass)
+  (if (funcall (funcall acc acc-pass 'add-password) joint-pass)
+      acc
+      "fail"))
+
+
+(defmacro error-handle-printv (&rest forms)
+  `(progn ,@(loop for f in forms collect `(error-handle-printv1 ,f))))
+(defun error-print (se)
+  (format t "--ERROR :: ~s~%" se))
+(defmacro error-handle-printv1 (f)
+  `(handler-case
+       (printv:printv ,f)
+     (simple-error (se) (error-print se))
+     (unbound-variable (se) (error-print se))))
+
+(defvar *acc*)
+(defvar *acc-other*)
+(defvar *acc-fail*)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (error-handle-printv
+   (defvar *acc*       (make-account 100 'password))
+   (defvar *acc-other* (make-joint *acc* 'password 'joint-pass))
+   (defvar *acc-fail*  (make-joint *acc-other* 'other-password 'joint-pass2))
+   (funcall (funcall *acc* 'password 'withdraw) 10)
+   (funcall (funcall *acc* 'joint-pass 'withdraw) 20)
+   (funcall (funcall *acc* 'joint-pass2 'withdraw) 30)
+   (funcall (funcall *acc-other* 'password 'deposit) 40)
+   (funcall (funcall *acc-other* 'joint-pass 'withdraw) 50)
+   (funcall (funcall *acc-other* 'joint-pass2 'withdraw) 60)
+   (funcall (funcall *acc* 'password 'withdraw) 10)
+   (funcall (funcall *acc* 'joint-pass 'withdraw) 20)
+   (funcall (funcall *acc* 'joint-pass2 'withdraw) 30)
+   (funcall (funcall *acc-fail* 'password 'withdraw) 70)
+   (funcall (funcall *acc-fail* 'joint-pass 'withdraw) 80)
+   (funcall (funcall *acc-fail* 'joint-pass2 'withdraw) 90)
+   ))
+;;; vim: set ft=lisp lisp:
