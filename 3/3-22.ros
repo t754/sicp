@@ -1,0 +1,74 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-22.3702136706
+  (:use :cl))
+(in-package :ros.script.3-22.3702136706)
+
+(defun set-car! (li x)
+  (setf (car li) x))
+(defun set-cdr! (li x)
+  (setf (cdr li) x))
+
+
+(defun make-queue()
+  (let ((front-ptr '())
+        (rear-ptr '()))
+    (labels ((set-front-ptr! (x)
+               (setf front-ptr x))
+             (set-rear-ptr! (x)
+               (setf rear-ptr x))
+             (empty-queue? ()
+               (null front-ptr))
+             (insert-queue! (item)
+               (let ((new-pair (cons item '())))
+                 (cond ((empty-queue?)
+                        (set-front-ptr! new-pair)
+                        (set-rear-ptr! new-pair)
+                        front-ptr)
+                       (t
+                        (set-cdr! rear-ptr new-pair)
+                        (set-rear-ptr! new-pair)
+                        front-ptr))))
+             (delete-queue! ()
+               (cond ((empty-queue?)
+                      (error "DELETE! called with an empty queue ~S" front-ptr))
+                     (t
+                      (set-front-ptr! (cdr front-ptr))
+                      front-ptr)))
+             (print-queue ()
+               (format nil "~s" front-ptr))
+
+             (dispatch (m)
+               (case m
+                 (front-ptr front-ptr)
+                 (rear-ptr rear-ptr)
+                 (set-front-ptr! #'set-front-ptr!)
+                 (set-rear-ptr! #'set-rear-ptr!)
+                 (empty-queue? #'empty-queue?)
+                 (insert-queue! #'insert-queue!)
+                 (delete-queue! #'delete-queue!)
+                 (print-queue #'print-queue))))
+      #'dispatch)))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (defvar q (make-queue))
+   (funcall (funcall q 'empty-queue?))
+   (funcall (funcall q 'insert-queue!) 1)
+   (funcall (funcall q 'insert-queue!) 2)
+   (funcall (funcall q 'insert-queue!) 42)
+   (funcall (funcall q 'print-queue))
+   (funcall (funcall q 'delete-queue!))
+   (funcall (funcall q 'delete-queue!))
+   (funcall (funcall q 'print-queue))))
+;;; vim: set ft=lisp lisp:
