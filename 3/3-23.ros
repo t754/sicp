@@ -1,0 +1,157 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-23.3702190110
+  (:use :cl))
+(in-package :ros.script.3-23.3702190110)
+
+
+(defun set-car! (li x)
+  (setf (car li) x))
+(defun set-cdr! (li x)
+  (setf (cdr li) x))
+
+(defun make-deque ()
+  (cons '() '()))
+
+
+(defun front-ptr (queue)
+  (car queue))
+(defun rear-ptr (queue)
+  (cdr queue))
+(defun set-front-ptr! (queue item)
+  (set-car! queue item))
+(defun set-rear-ptr! (queue item)
+  (set-cdr! queue item))
+
+(defun empty-deque? (deque)
+  (null (front-ptr deque)))
+
+(defun front-deque (deque)
+  (car deque))
+(defun rear-deque (deque)
+  (cdr deque))
+
+(defun cell-item (cell)
+  (car cell))
+
+(defun cell-next (cell)
+  (cadr cell))
+(defun set-cell-next! (cell item)
+  (setf (cadr cell) item))
+(defun cell-prev (cell)
+  (caddr cell))
+(defun set-cell-prev! (cell item)
+  (setf (caddr cell) item))
+(defun make-cell (item)
+  (list item nil nil))
+
+(defun print-cells (cell)
+  (labels ((iter (xn acc)
+             (cond ((null xn) (nreverse acc))
+                   (t (iter (cell-next xn)
+                            (cons (cell-item xn) acc))))))
+    (iter cell nil)))
+
+(defun print-deque (deque)
+  (print-cells (front-ptr deque)))
+
+
+
+(defun insert-cell! (prev-cell next-cell item)
+  (let ((new-cell (make-cell item)))
+    (cond ((eq prev-cell next-cell) (error "same cell"))
+          ((and (null prev-cell) (null next-cell)) (error "targets cells not found")))
+    (unless (null next-cell)
+      (set-cell-prev! next-cell new-cell))
+    (unless (null prev-cell)
+      (set-cell-next! prev-cell new-cell))
+    (set-cell-next! new-cell next-cell)
+    (set-cell-prev! new-cell prev-cell)
+    nil))
+
+(defun front-insert-deque! (deque item)
+  (cond ((empty-deque? deque)
+         (let ((new-cell (make-cell item)))
+           (set-front-ptr! deque new-cell)
+           (set-rear-ptr! deque new-cell)))
+        (t
+         (insert-cell! nil (front-ptr deque) item)
+         (set-front-ptr! deque (cell-prev (front-ptr deque)))))
+  t)
+
+(defun rear-insert-deque! (deque item)
+  (cond ((empty-deque? deque)
+         (let ((new-cell (make-cell item)))
+           (set-front-ptr! deque new-cell)
+           (set-rear-ptr! deque new-cell)))
+        (t
+         (insert-cell! (rear-ptr deque) nil item)
+         (set-rear-ptr! deque (cell-next (rear-ptr deque)))))
+  t)
+
+(defun delete-cell! (cell)
+  (let ((next (cell-next cell))
+        (prev (cell-prev cell)))
+    (setf cell nil)
+    (unless (null next)
+      (set-cell-prev! next prev))
+    (unless (null prev)
+      (set-cell-next! prev next))
+    t))
+
+(defun front-delete-deque! (deque)
+  (cond ((empty-deque? deque)
+         (error "DELETE! called with an empty queue"))
+        ((eq (front-ptr deque) (rear-ptr deque))
+         (delete-cell! (front-ptr deque))
+         (set-front-ptr! deque nil)
+         (set-rear-ptr! deque nil))
+        (t
+         (let ((tmp (cell-next (front-ptr deque))))
+           (delete-cell! (front-ptr deque))
+           (set-front-ptr! deque tmp))))
+  t)
+
+(defun rear-delete-deque! (deque)
+  (cond ((empty-deque? deque)
+         (error "DELETE! called with an empty queue"))
+        ((eq (front-ptr deque) (rear-ptr deque))
+         (delete-cell! (rear-ptr deque))
+         (set-front-ptr! deque nil)
+         (set-rear-ptr! deque nil))
+        (t
+         (let ((tmp (cell-prev (rear-ptr deque))))
+           (delete-cell! (rear-ptr deque))
+           (set-rear-ptr! deque tmp))))
+  t)
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (defparameter d (make-deque))
+   (empty-deque? d)
+   (print-deque d)
+   (front-insert-deque! d 1)
+   (front-insert-deque! d 2)
+   (front-insert-deque! d 3)
+   (print-deque d)
+   (empty-deque? d)
+   (rear-insert-deque! d 'a)
+   (rear-insert-deque! d 'b)
+   (rear-insert-deque! d 'c)
+   (print-deque d)
+   (front-delete-deque! d)
+   (print-deque d)
+   (rear-delete-deque! d)
+   (print-deque d)))
+;;; vim: set ft=lisp lisp:
