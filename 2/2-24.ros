@@ -1,0 +1,54 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '( :s-dot) :silent t))
+
+;; (defpackage :ros.script.2-24.3684416624
+;;   (:use :cl))
+;; (in-package :ros.script.2-24.3684416624)
+(in-package :s-dot)
+
+(defmacro graph-list (lis val)
+  (let ((parent (gensym))
+        (now (gensym)))
+    `(let ((,now ,(format nil "~s>~s" lis val))
+           (,parent ,(format nil "~s" lis)))
+       (list  (list 'node (list
+                           (list 'id ,parent)
+                           (list 'label ,now)))
+              (list 'edge (list
+                           (list 'from ,now)
+                           (list 'to ,parent)))))))
+
+
+(cons (graph-list "a" "b") '(1 2 3))
+(append '(bb c) (list c a))
+(let ((f '("a" 2))
+      (b 'c))
+  (cons f b)
+  )
+
+(defun my-s-dot (lis)
+  (labels ((iter (li nodes)
+             (mapcar (lambda (x)
+                       (when (listp x) (setf nodes (iter x nodes)))
+                       (cons (graph-list li x) nodes))
+                     li)))
+    (iter lis nil)))
+
+;; (add-graph 'top (list 1 2) aaa)
+
+;;
+;;  (mapc (lambda (x) (* ))
+;;        (cons (list 1 0) (list 2 3)))
+;; ;; (render-s-dot #P"list.gif" "gif" my-graph)
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (my-s-dot (cons (list 1 0) (list 2 3)))
+  )
+;;; vim: set ft=lisp lisp:
