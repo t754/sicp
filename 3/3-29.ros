@@ -1,0 +1,41 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-29.3704350011
+  (:use :cl))
+(in-package :ros.script.3-29.3704350011)
+
+;;      +----------------------------+
+;;      |                            |
+;;      |   +---+  c +----+          |
+;; a1---+---|not|----+    | e +---+  |
+;;      |   +---+    |    |---|not|--+--output
+;;      |   +---+  d | and|   +---+  |
+;; a2---+---|not|----+    |          |
+;;      |   +---+    +----+          |
+;;      |                            |
+;;      +----------------------------+
+
+;;  delay = inverter-delay + and-gate-delay + inverter-delay
+(defun or-gate (a1 a2 output)
+  (let ((c (make-wire))
+        (d (make-wire))
+        (e (make-wire)))
+    (inverter a1 c)
+    (inverter a2 d)
+    (and-gate c d e)
+    (inverter e output))
+  'ok)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv))
+;;; vim: set ft=lisp lisp:
