@@ -1,0 +1,50 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-30.3704375785
+  (:use :cl))
+(in-package :ros.script.3-30.3704375785)
+
+
+
+(defun full-adder (a b c-in sum c-out)
+  (let ((s (make-wire))
+        (c1 (make-wire))
+        (c2 (make-wire)))
+    (half-adder b c-in s c1)
+    (half-adder a s sum c2)
+    (or-gate c1 c2 c-out)
+    'ok))
+
+
+(defun ripple-carry-adder (listA listB listS c-out)
+  (labels ((adder-iter (lisA lisB c lisS)
+             (if (not (or (null lisA) (null listB) (null lisA)))
+                 (setf c-out c)
+                 (let ((co (make-wire)))
+                   (full-adder (car lisA)
+                               (car lisB)
+                               c
+                               (car lisS)
+                               co)
+                   (adder-iter (cdr lisA) (cdr lisB) co (cdr lisS))))))
+    (adder-iter listA listB 0 listS)
+    'ok))
+
+;; nbit ripple-carry-adder-delay = n * full-adder-delay
+;;                               = n * (2 * half-adder-delay + or-gate-delay)
+;;                               = n * (2 * (or-gate-delay + 2 * and-gate-delay + inv-gate-delay ) + or-gate-delay)
+;;                               = n * (3 * or-gate-delay + 4 * and-gate-delay +  2* inv-gate-delay)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv))
+;;; vim: set ft=lisp lisp:
