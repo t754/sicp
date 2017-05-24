@@ -26,22 +26,17 @@ exec ros -Q -- $0 "$@"
 
 (defun ripple-carry-adder (listA listB listS c-out)
   (labels ((adder-iter (lisA lisB c lisS)
-             (if (not (or (null lisA) (null listB) (null lisA)))
-                 (setf c-out c)
-                 (let ((co (make-wire)))
-                   (full-adder (car lisA)
-                               (car lisB)
-                               c
-                               (car lisS)
-                               co)
-                   (adder-iter (cdr lisA) (cdr lisB) co (cdr lisS))))))
-    (adder-iter listA listB 0 listS)
+             (unless  (or (null lisA) (null listB) (null lisS))
+               (let ((co (make-wire)))
+                 (full-adder (car lisA)
+                             (car lisB)
+                             c
+                             (car lisS)
+                             co)
+                 (adder-iter (cdr lisA) (cdr lisB) co (cdr lisS))))))
+    (adder-iter listA listB (make-wire) listS)
     'ok))
 
-;; nbit ripple-carry-adder-delay = n * full-adder-delay
-;;                               = n * (2 * half-adder-delay + or-gate-delay)
-;;                               = n * (2 * (or-gate-delay + 2 * and-gate-delay + inv-gate-delay ) + or-gate-delay)
-;;                               = n * (3 * or-gate-delay + 4 * and-gate-delay +  2* inv-gate-delay)
 
 (defun main (&rest argv)
   (declare (ignorable argv))
