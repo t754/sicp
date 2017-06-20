@@ -1,0 +1,78 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-38.3706767948
+  (:use :cl))
+(in-package :ros.script.3-38.3706767948)
+
+;; Peter (setq balance (+ balance 10))
+;; 1. access   (get-balance)
+;; 2. 100 + 10 (+ x 10)
+;; 3. set 110  (set-balance)
+
+;; Paul    (setq balance (- balance 20))
+;; 1. access 100
+;; 2. 100 - 20
+;; 3. set 80
+
+;; Mary    (setq balance (- balance (/ balance 2)))
+;; 1. access
+;; 2. 100 - (100/2)
+;; 3. set
+(defvar *balance* 100)
+
+(defstruct steps
+  (cnt 0)
+  (val)
+  (fun (lambda (x) x)))
+
+(defmethod run-steps ((s steps))
+  (incf (steps-cnt s))
+  (case (steps-cnt s)
+    (1 (progn
+         (setf (steps-val s) *balance*)))
+    (2 (progn
+         (setf (steps-val s) (funcall (steps-fun s) (steps-val s)))))
+    (3 (progn
+         (setq *balance* (steps-val s))))
+    (otherwise 'empty)))
+
+(defmethod init-steps ((s steps))
+  (setf (steps-cnt s) 0))
+
+(defun all-permutations (lst &optional (remain lst))
+  (cond ((null remain) nil)
+        ((null (rest lst)) (list lst))
+        (t (append
+            (mapcar (lambda (l) (cons (first lst) l))
+                    (all-permutations (rest lst)))
+            (all-permutations (append (rest lst) (list (first lst))) (rest remain))))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (let ((p (make-steps :fun (lambda (x) (+ x 10))))
+        (u (make-steps :fun (lambda (x) (- x 20))))
+        (m (make-steps :fun (lambda (x) (- x (/ x 20))))))
+    (print
+     (remove-duplicates
+      (mapcar (lambda (li)
+                (setq *balance* 100)
+                (init-steps p)
+                (init-steps u)
+                (init-steps m)
+                (dolist (x li)
+                  (run-steps x))
+                *balance*)
+              (all-permutations (list
+                                 p p p
+                                 u u u
+                                 m m m)))))))
+;;; vim: set ft=lisp lisp:
