@@ -1,0 +1,77 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+(defpackage :ros.script.3-40.3706967432
+  (:use :cl))
+(in-package :ros.script.3-40.3706967432)
+
+
+(defstruct steps
+  (cnt 0)
+  val
+  funcs)
+
+(defmethod run-steps ((s steps))
+  (funcall (nth (steps-cnt s) (steps-funcs s)) s)
+  (incf (steps-cnt s)))
+
+
+
+(defmethod init-steps ((s steps))
+  (setf (steps-cnt s) 0))
+
+(defun all-permutations (lst &optional (remain lst))
+  (cond ((null remain) nil)
+        ((null (rest lst)) (list lst))
+        (t (append
+            (mapcar (lambda (l) (cons (first lst) l))
+                    (all-permutations (rest lst)))
+            (all-permutations (append (rest lst) (list (first lst))) (rest remain))))))
+
+
+(defvar *X* 10)
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (let ((p0 (make-steps :funcs (list ;; (set! x (* x x))
+                                (lambda (s) (setf (steps-val s) (* *X* *X*)))
+                                (lambda (s) (setf *X* (steps-val s))))))
+        (p1 (make-steps :funcs (list ;; (set! x (* x x))
+                                (lambda (s) (setf (steps-val s) (* *X* *X* *X*)))
+                                (lambda (s) (setf *X* (steps-val s)))))))
+    (format t "default-parallel :: ~S~%"
+            (remove-duplicates
+             (mapcar (lambda (li)
+                       (setq *X* 10)
+                       (init-steps p0)
+                       (init-steps p1)
+                       (dolist (x li)
+                         (run-steps x))
+                       *X*)
+                     (all-permutations (list
+                                        p0 p0
+                                        p1 p1))))))
+  (let ((s-p0 (make-steps :funcs (list ;; (s (set! x (* x x)))
+                                  (lambda (s) (setf *X* (* *X* *X*))))))
+        (s-p1 (make-steps :funcs (list ;; (s (set! x (* x x)))
+                                  (lambda (s) (setf *X* (* *X* *X* *X*)))))))
+    (format t "serializer :: ~S~%"
+            (remove-duplicates
+             (mapcar (lambda (li)
+                       (setq *X* 10)
+                       (init-steps s-p0)
+                       (init-steps s-p1)
+                       (dolist (x li)
+                         (run-steps x))
+                       *X*)
+                     (all-permutations (list
+                                        s-p0
+                                        s-p1)))))))
+
+;;; vim: set ft=lisp lisp:
