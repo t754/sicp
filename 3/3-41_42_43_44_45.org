@@ -1,0 +1,84 @@
+* ans
+
+** 3-41
+
+   #+BEGIN_SRC lisp
+   ((protected (lambda () balance))
+   #+END_SRC
+
+   特に,変な挙動は発生しそうにないが,
+   protected より値が取得できるまで,待ちが発生しそう
+
+** 3-42
+
+   #+BEGIN_SRC lisp
+   (let ((protected-withdraw (protected withdraw))
+         (protected-deposit (protected deposit)))
+   #+END_SRC
+
+   これもまたちゃんとロックがかけられているので,直列化できそう.
+
+** 3-43
+
+   交換プログラムは,以下のコード.
+   #+BEGIN_SRC lisp
+      (define (exchange account1 account2)
+           (let ((difference (- (account1 'balance)   ;; step1
+                                (account2 'balance)))) ;; step2
+             ((account1 'withdraw) difference)  ;; step3
+             ((account2 'deposit) difference))) ;; step4
+   #+END_SRC
+   ここで 口座 account1,account2,account3 がそれぞれ 10,20,30持っていた場合.
+   以下のコードを走らせたとする.
+   #+BEGIN_SRC lisp
+      (parallel-execute
+       (lamdba () (excange account1 account2))  ;; process1
+       (lamdba () (excange account2 account3)   ;; process2
+       (lamdba () (excange account3 account1))) ;; process3
+   #+END_SRC
+
+   コメント部分の process をP , step をSに省略して書くと
+
+   1. p2-S1 :: get 20
+   2. p3-S1 :: get 30
+   3. p2-S2 :: diffrence <- -10   ;;(- 20 30)
+   4. p2-S3 :: account2 <- 30     ;;(- account2 -10)
+   5. p1-S1 :: get 10
+   6. p1-S2 :: diffrence <- -20   ;;(- 10 30)
+   7. p2-S4 :: account3 <- 20     ;;(+ account3 -10)
+   8. p3-S2 :: diffrence <- 20    ;;(- 30 10)
+   9. p1-S3 :: account1 <- 30     ;;(- account1 -20)
+   10. p1-S4 :: account2 <- 10    ;;(+ account2 -20)
+   11. p3-S3 :: account3 <- 0     ;;(- account3 20)
+   12. p3-S4 :: account1 <- 50    ;;(+ account1 20)
+
+
+   これで (account1,account2,account3) => (50,10,0)
+   このため,10,20,30の組み合わせにはならない時もある.
+   ただし,全体の合計値は同じとなっている.
+
+** 3-44
+
+   口座 a1,a2,a3 があり,それぞれ残高をxドル とし,以下の操作をする
+
+   1. a1 => a2 に  xドル移す処理
+   2. a2 => a3 に 2xドル移す処理
+
+
+   今回の操作では,2 の操作が先に起きるかもしれない.
+   変更元,先のそれぞれ口座について,serializer を利用すれば移動も正しくできるはず.
+
+** 3-45
+
+   #+BEGIN_SRC lisp
+     (define (serialized-exchange account1 account2)
+       (let ((serializer1 (account1 'serializer))
+             (serializer2 (account2 'serializer)))
+         ((serializer1 (serializer2 exchange))
+          account1
+          account2)))
+   #+END_SRC
+
+   上のコードより,先に account1,account2は 直列化している.
+   しかし,exchange 内部の deposit,withdraw処理でも同じaccount1,account2は 直列化している.
+   そのため,exchange内の直列化は,先に直列化した処理が終わるまで待ち続けることになり,処理が永遠と進まない.
