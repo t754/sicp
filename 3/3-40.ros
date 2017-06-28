@@ -40,10 +40,13 @@ exec ros -Q -- $0 "$@"
   (declare (ignorable argv))
   (setq printv:*printv-output* *standard-output*)
   (let ((p0 (make-steps :funcs (list ;; (set! x (* x x))
-                                (lambda (s) (setf (steps-val s) (* *X* *X*)))
+                                (lambda (s) (setf (steps-val s) *X*))
+                                (lambda (s) (setf (steps-val s) (* (steps-val s) *X*)))
                                 (lambda (s) (setf *X* (steps-val s))))))
         (p1 (make-steps :funcs (list ;; (set! x (* x x))
-                                (lambda (s) (setf (steps-val s) (* *X* *X* *X*)))
+                                (lambda (s) (setf (steps-val s)  *X*))
+                                (lambda (s) (setf (steps-val s) (* (steps-val s) *X*)))
+                                (lambda (s) (setf (steps-val s) (* (steps-val s) *X*)))
                                 (lambda (s) (setf *X* (steps-val s)))))))
     (format t "default-parallel :: ~S~%"
             (remove-duplicates
@@ -55,8 +58,8 @@ exec ros -Q -- $0 "$@"
                          (run-steps x))
                        *X*)
                      (all-permutations (list
-                                        p0 p0
-                                        p1 p1))))))
+                                        p0 p0 p0
+                                        p1 p1 p1 p1))))))
   (let ((s-p0 (make-steps :funcs (list ;; (s (set! x (* x x)))
                                   (lambda (s) (setf *X* (* *X* *X*))))))
         (s-p1 (make-steps :funcs (list ;; (s (set! x (* x x)))
