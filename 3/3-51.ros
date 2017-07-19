@@ -10,18 +10,21 @@ exec ros -Q -- $0 "$@"
 (in-package :ros.script.3-51.3709446252)
 
 
-(defun delay (exp)
-  (lambda () exp))
+(defmacro delay (expr)
+  `(lambda () ,expr))
+
 (defun force (delayed-object)
   (funcall delayed-object))
-(defun cons-stream (a b)
-  (cons a (delay b)))
+
+(defmacro cons-stream (a b)
+  `(cons ,a (delay ,b)))
 
 (defun stream-car (stream)
   (car stream))
 
 (defun stream-cdr (stream)
   (force (cdr stream)))
+
 (defun stream-null? (stream)
   (null stream))
 (defvar the-empty-stream '())
