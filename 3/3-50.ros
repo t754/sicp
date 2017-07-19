@@ -34,8 +34,20 @@ exec ros -Q -- $0 "$@"
        (apply #'stream-map
               (cons proc (mapcar #'stream-cdr argstreams))))))
 
+(defun stream-enumerate-interval (low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream
+       low
+       (stream-enumerate-interval (+ low 1) high))))
+
+
 (defun main (&rest argv)
   (declare (ignorable argv))
   (setq printv:*printv-output* *standard-output*)
-  (printv:printv))
+  (printv:printv
+   (stream-map #'(lambda (x y z) (print (+ x y z)))
+               (stream-enumerate-interval 1 10)
+               (stream-enumerate-interval 1 10)
+               (stream-enumerate-interval 1 10))))
 ;;; vim: set ft=lisp lisp:
