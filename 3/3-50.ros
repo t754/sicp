@@ -1,0 +1,41 @@
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  #+quicklisp (ql:quickload '(swank printv) :silent t))
+
+
+(defpackage :ros.script.3-50.3709420297
+  (:use :cl))
+(in-package :ros.script.3-50.3709420297)
+
+(defun delay (exp)
+  (lambda () exp))
+(defun force (delayed-object)
+  (funcall delayed-object))
+(defun cons-stream (a b)
+  (cons a (delay b)))
+
+(defun stream-car (stream)
+  (car stream))
+
+(defun stream-cdr (stream)
+  (force (cdr stream)))
+(defun stream-null? (stream)
+  (null stream))
+(defvar the-empty-stream '())
+
+(defun stream-map (proc &rest argstreams)
+  (if (stream-null? (car argstreams))
+      the-empty-stream
+      (cons-stream
+       (apply proc (mapcar #'stream-car argstreams))
+       (apply #'stream-map
+              (cons proc (mapcar #'stream-cdr argstreams))))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv))
+;;; vim: set ft=lisp lisp:
