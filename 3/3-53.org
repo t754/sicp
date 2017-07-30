@@ -1,7 +1,7 @@
 * ans 3-53
 
   #+begin_src lisp
-  (defparameter s (cons-stream 1 (add-streams s s)))
+  (setq s (cons-stream 1 (add-streams s s)))
   #+end_src
 
-  内部で参照しているs が定義していないためエラー
+  1 2 4 8 .. のように x^2 のstream が作成される
