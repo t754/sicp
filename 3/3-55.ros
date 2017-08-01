@@ -1,0 +1,114 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-55.3710412275
+  (:use :cl))
+(in-package :ros.script.3-55.3710412275)
+
+(defmacro delay (expr)
+  `(lambda () ,expr))
+
+(defun force (delayed-object)
+  (funcall delayed-object))
+
+(defmacro cons-stream (a b)
+  `(cons ,a (delay ,b)))
+
+
+(defun stream-car (stream)
+  (car stream))
+
+(defun stream-cdr (stream)
+  (force (cdr stream)))
+
+(defun stream-null? (stream)
+  (null stream))
+(defvar the-empty-stream '())
+
+
+
+
+
+(defun stream-enumerate-interval (low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream
+       low
+       (stream-enumerate-interval (+ low 1) high))))
+
+
+(defun stream-ref(s n)
+  (if (= n 0)
+      (stream-car s)
+      (stream-ref (stream-cdr s) (- n 1))))
+
+(defun stream-filter (pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((funcall pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred
+                                     (stream-cdr stream))))
+        (t (stream-filter pred (stream-cdr stream)))))
+
+
+
+(defun stream-for-each (proc s)
+  (if (stream-null? s)
+      'done
+      (progn (funcall proc (stream-car s))
+             (stream-for-each proc (stream-cdr s)))))
+
+(defun display-line (x)
+  (print x))
+(defun display-stream (s)
+  (stream-for-each #'display-line s))
+
+(defun stream-map (proc &rest argstreams)
+  (if (stream-null? (car argstreams))
+      the-empty-stream
+      (cons-stream
+       (apply proc (mapcar #'stream-car argstreams))
+       (apply #'stream-map
+              (cons proc (mapcar #'stream-cdr argstreams))))))
+
+(defun add-streams(s1 s2)
+  (stream-map #'+ s1 s2))
+(defun mul-streams(s1 s2)
+  (stream-map #'* s1 s2))
+
+
+(defvar *ones*)
+(setq *ones* (cons-stream 1 *ones*))
+
+(defvar *integers*)
+(setq *integers*
+      (cons-stream 1 (add-streams *ones* *integers*)))
+
+
+(defun stream-take (s n)
+  (if (= n 0)
+      nil
+      (cons (stream-car s) (stream-take (stream-cdr s) (- n 1)))))
+
+(defun partial-sums (stream)
+  (labels ((psum (s acc)
+             (let ((tail (stream-cdr s))
+                   (tmp (+ (stream-car s) acc)))
+               (cons-stream tmp
+                            (psum tail tmp)))))
+    (psum stream 0)))
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   (stream-take (partial-sums *integers*) 10)))
+;;; vim: set ft=lisp lisp:
