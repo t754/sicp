@@ -151,12 +151,14 @@ exec ros -Q -- $0 "$@"
 ;;                                      (stream-car s))))))
 ;;     (funcall #'f stream 0)))
 
-(defun make-zero-crossings (s)
-  (let ((ss (smooth s)))
-    (stream-map #'sign-change-detector
-                ss
-                (stream-cdr ss))))
 
+(defun make-zero-crossings (s)
+  (stream-map #'sign-change-detector
+              s
+              (stream-cdr s)))
+
+(defun make-smooth-zero--crossings (s)
+  (make-zero-crossings (smooth s)))
 
 (defun random-range (min max N)
   (+ min
@@ -180,5 +182,5 @@ exec ros -Q -- $0 "$@"
    (stream-take *noise-sin* 20))
   (setf *random-state* *snap-shot*)
   (printv:printv
-   (stream-take (make-zero-crossings *noise-sin*) 20)))
+   (stream-take (make-smooth-zero--crossings *noise-sin*) 20)))
 ;;; vim: set ft=lisp lisp:
