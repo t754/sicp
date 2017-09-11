@@ -152,5 +152,12 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
   (setq printv:*printv-output* *standard-output*)
-  (printv:printv))
+  (let ((src-stream (stream-map (lambda (x) (sin (/ x 2))) *integers*)))
+    (printv:printv
+     (stream-take src-stream 16)
+     (stream-take
+      (make-zero-crossings src-stream
+                           0
+                           0)
+      16))))
 ;;; vim: set ft=lisp lisp:
