@@ -1,0 +1,202 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  )
+
+(defpackage :ros.script.3-82.3714569626
+  (:use :cl))
+(in-package :ros.script.3-82.3714569626)
+
+(defvar UNFORCED (gensym))
+(defstruct delayobj forced closure)
+
+(defmacro delay (expr)
+  (let ((self (gensym)))
+    `(let ((,self (make-delayobj :forced UNFORCED)))
+       (setf (delayobj-closure ,self)
+             #'(lambda ()
+                 (setf (delayobj-forced ,self) ,expr)))
+       ,self)))
+
+(defun force (x)
+  (if (delayobj-p x)
+      (if (eq (delayobj-forced x) UNFORCED)
+          (funcall (delayobj-closure x))
+          (delayobj-forced x))
+      x))
+
+(defmacro cons-stream (a b)
+  `(cons ,a (delay ,b)))
+
+(defun stream-car (stream)
+  (car stream))
+
+(defun stream-cdr (stream)
+  (force (cdr stream)))
+
+(defun stream-null? (stream)
+  (null stream))
+(defvar the-empty-stream '())
+
+(defun stream-enumerate-interval (low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream
+       low
+       (stream-enumerate-interval (+ low 1) high))))
+
+
+(defun stream-ref(s n)
+  (if (= n 0)
+      (stream-car s)
+      (stream-ref (stream-cdr s) (- n 1))))
+
+(defun stream-filter (pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((funcall pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred
+                                     (stream-cdr stream))))
+        (t (stream-filter pred (stream-cdr stream)))))
+
+
+
+(defun stream-for-each (proc s)
+  (if (stream-null? s)
+      'done
+      (progn (funcall proc (stream-car s))
+             (stream-for-each proc (stream-cdr s)))))
+
+(defun display-line (x)
+  (print x))
+(defun display-stream (s)
+  (stream-for-each #'display-line s))
+
+(defun stream-map (proc &rest argstreams)
+  (if (stream-null? (car argstreams))
+      the-empty-stream
+      (cons-stream
+       (apply proc (mapcar #'stream-car argstreams))
+       (apply #'stream-map
+              (cons proc (mapcar #'stream-cdr argstreams))))))
+
+
+
+(defun add-streams (s1 s2)
+  (stream-map #'+ s1 s2))
+
+(defun mul-streams(s1 s2)
+  (stream-map #'* s1 s2))
+
+
+(defvar *ones*)
+(setq *ones* (cons-stream 1 *ones*))
+
+(defvar *integers*)
+(setq *integers*
+      (cons-stream 1 (add-streams *ones* *integers*)))
+
+
+(defun stream-take (s n)
+  (if (= n 0)
+      nil
+      (cons (stream-car s) (stream-take (stream-cdr s) (- n 1)))))
+
+(defun partial-sums (stream)
+  (labels ((psum (s acc)
+             (let ((tail (stream-cdr s))
+                   (tmp (+ (stream-car s) acc)))
+               (cons-stream tmp
+                            (psum tail tmp)))))
+    (psum stream 0)))
+
+(defun scale-stream(stream factor)
+  (stream-map (lambda (x) (* x factor)) stream))
+
+(defun integrate-series (s)
+  (mul-streams s
+               (stream-map (lambda (x) (/ 1 x)) *integers*)))
+
+(defvar *exp-series*)
+(setq *exp-series* (cons-stream 1 (integrate-series *exp-series*)))
+
+(defvar *cosine-series*)
+(defvar *sine-series*)
+
+(setq *cosine-series*
+      (cons-stream
+       1
+       (stream-map #'- (integrate-series *sine-series*))))
+
+(setq *sine-series*
+      (cons-stream
+       0
+       (integrate-series *cosine-series*)))
+
+
+(defun random-in-range (low high)
+  "low <= x < high"
+  (let ((range (- high low)))
+    (+ low (random range))))
+
+
+(defun make-random-point-stream (x1 x2 y1 y2)
+                                        ; ( (x1 y1) (x2 y2) ... )
+  (cons-stream (list (random-in-range x1 x2)
+                     (random-in-range y1 y2))
+               (make-random-point-stream x1 x2 y1 y2)))
+
+
+(defun square (x)
+  (* x x))
+
+(defun make-function-P (x1 x2 y1 y2)
+  "Check if there are points inside ellipse
+↓ latex formula
+$\dfrac {\left( a-\dfrac {x_{2}+x_{1}} {2}\right) ^{2}} {\left( \dfrac {x_{2}-x_{1}} {2}\right) ^{2}}+\dfrac {\left( b-\dfrac {y_{2}+y_{1}} {2}\right) ^{2}} {\left( \dfrac {y_{2}-y_{1}} {2}\right) ^{2}}\leq 1$"
+  (lambda (a b)
+    (<= (+ (/ (square (- a (/ (+ x2 x1) 2)))
+              (square (/ (- x2 x1) 2)))
+           (/ (square (- b (/ (+ y2 y1) 2)))
+              (square (/ (- y2 y1) 2))))
+        1)))
+
+
+(defun monte-carlo-stream-iter (pred random-point-stream num i)
+  (let* ((a (stream-car random-point-stream))
+         (val (+ num
+                 (if (funcall pred (car a) (cadr a))
+                     1 0))))
+    (cons-stream
+     (list val i)
+     (monte-carlo-stream-iter pred (stream-cdr random-point-stream) val (+ 1 i)))))
+
+(defun monte-carlo-stream (experiment random-point-stream)
+  "返り値は (試行数 pass数)"
+  (monte-carlo-stream-iter experiment random-point-stream 0 0))
+
+;; xy1, xy2 => (x1 y1) (x2 y2)
+(defun try-estimate-rectangle-stream (x1 x2 y1 y2)
+  (when (> x1 x2)
+    (rotatef x1 x2))
+  (when (> y1 y2)
+    (rotatef y1 y2))
+  (let ((func-P (make-function-P x1 x2 y1 y2)))
+    (monte-carlo-stream
+     func-P
+     (make-random-point-stream x1 x2 y1 y2))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (let ((tmp))
+    (printv:printv
+     (/ pi 4)
+     (setf tmp (stream-ref (try-estimate-rectangle-stream 0 100 1000 1200) 10000))
+     (format nil "~G" (/ (car tmp) (cadr tmp))))))
+;;; vim: set ft=lisp lisp:
