@@ -315,6 +315,26 @@ exec ros -Q -- $0 "$@"
 (defvar input-prompt ";;; M-Eval input:")
 (defvar output-prompt ";;; M-Eval value:")
 
+(defun input-debug-print (obj)
+  (let ((str (format nil "~s" obj)))
+    (let ((len (length str))
+          (s (make-array '(0)
+                         :element-type 'base-char
+                         :fill-pointer 0
+                         :adjustable t)))
+      (with-output-to-string (sb s)
+        (format sb "~&>>>:")
+        (labels ((iter (i)
+                   (when (< i len)
+                     (let ((ch (char str i)))
+                       (format sb "~c" ch)
+                       (when (char= ch #\newline)
+                         (format sb "~&>>>>:"))
+                       (iter (1+ i))))))
+          (iter 0))
+        (format t "~%~s~%" s)))))
+
+
 
 (defun prompt-for-input (string)
   (format t "~%~%~s~%" string))
@@ -337,6 +357,7 @@ exec ros -Q -- $0 "$@"
   (prompt-for-input input-prompt)
   (let ((input (read *standard-input* nil EOF)))
     (when (not (eq EOF input))
+      (input-debug-print input)
       (let ((output (eval input *the-global-environment*)))
         (announce-output output-prompt)
         (user-print output))
