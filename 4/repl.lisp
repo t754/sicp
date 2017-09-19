@@ -315,13 +315,6 @@ exec ros -Q -- $0 "$@"
 (defvar input-prompt ";;; M-Eval input:")
 (defvar output-prompt ";;; M-Eval value:")
 
-(defun driver-loop()
-  (prompt-for-input input-prompt)
-  (let ((input (read)))
-    (let ((output (eval input *the-global-environment*)))
-      (announce-output output-prompt)
-      (user-print output)))
-  (driver-loop))
 
 (defun prompt-for-input (string)
   (format t "~%~%~s~%" string))
@@ -338,8 +331,13 @@ exec ros -Q -- $0 "$@"
       (print object)))
 
 (defvar *the-global-environment* (setup-environment))
+(defconstant EOF (gensym))
 
-;; (defun main (&rest argv)
-;;   (declare (ignorable argv))
-;;   (driver-loop))
-;;; vim: set ft=lisp lisp:
+(defun driver-loop()
+  (prompt-for-input input-prompt)
+  (let ((input (read *standard-input* nil EOF)))
+    (when (not (eq EOF input))
+      (let ((output (eval input *the-global-environment*)))
+        (announce-output output-prompt)
+        (user-print output))
+      (driver-loop))))
