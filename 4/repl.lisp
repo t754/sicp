@@ -34,7 +34,7 @@ exec ros -Q -- $0 "$@"
 
 (defun tagged-list? (exp tag)
   (if (consp exp)
-      (eq (car exp) tag)
+      (string= (car exp) tag)
       nil))
 
 (defun quoted?(exp)
@@ -259,7 +259,7 @@ exec ros -Q -- $0 "$@"
              (labels ((scan (vars vals)
                         (cond ((null vars)
                                (env-loop (enclosing-environment env)))
-                              ((eq var (car vars))
+                              ((string= var (car vars))
                                (car vals))
                               (t (scan (cdr vars) (cdr vals))))))
                (if (eq env *the-empty-environment*)
