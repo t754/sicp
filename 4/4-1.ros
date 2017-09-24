@@ -1,0 +1,60 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  (load "./repl.lisp"))
+
+
+(in-package :sicp4.repl)
+
+(defun left-list-of-values (exps env)
+  (labels ((iter (result rest)
+             (if (no-operands? rest)
+                 result
+                 (let ((evaled (list (eval (first-operand rest) env))))
+                   (iter (if (no-operands? result)
+                             evaled
+                             (append result evaled))
+                         (rest-operands rest))))))
+    (iter nil exps)))
+
+
+(defun right-list-of-values (exps env)
+  (flet ((my-eval (x) (if (no-operands? x) nil (eval x env))))
+    (reduce (lambda (a b)
+              (cons (my-eval a) b))
+            exps
+            :initial-value nil
+            :from-end t)))
+
+
+(defpackage :ros.script.4-1.3714669860
+  (:use :cl)
+  (:shadowing-import-from :sicp4.repl)
+  )
+
+(in-package :ros.script.4-1.3714669860)
+
+
+(defvar *script-str* "(cons (print \"left\") (print \"right\"))")
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+
+  ;; over write list-of-values
+  ;; eval order →
+  (defun sicp4.repl::list-of-values(ex ev)
+    (sicp4.repl::left-list-of-values ex ev))
+  (with-input-from-string (s1 *script-str*)
+    (sicp4.repl:driver-loop s1))
+
+  ;; over write list-of-values
+  ;; eval order ←
+  (defun sicp4.repl::list-of-values(ex ev)
+    (sicp4.repl::right-list-of-values ex ev))
+  (with-input-from-string (s2 *script-str*)
+    (sicp4.repl:driver-loop s2)))
+;;; vim: set ft=lisp lisp:
