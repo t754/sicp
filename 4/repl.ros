@@ -1,0 +1,18 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  (load "./repl.lisp")
+  )
+
+(defpackage :ros.script.a.3714666020
+  (:use :cl))
+(in-package :ros.script.a.3714666020)
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (sicp4.repl:driver-loop))
+;;; vim: set ft=lisp lisp:
