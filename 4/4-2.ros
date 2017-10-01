@@ -1,0 +1,73 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  (load "./repl.lisp")
+  )
+
+(in-package :sicp4.repl)
+
+(defun application? (exp) (tagged-list? exp 'call))
+
+(defun eval (exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+
+        ((application? exp)                              ;add
+         (let ((exp (cdr exp)))                          ;
+           (apply (eval (operator exp) env)              ;
+                  (list-of-values (operands exp) env)))) ;
+
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
+        ((begin? exp)
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
+
+        ;; ↓delete
+        ;; ((application? exp)
+        ;;  (apply (eval (operator exp) env)
+        ;;         (list-of-values (operands exp) env)))
+        (t
+         (error "Unknown expression type -- EVAL ~S" exp))))
+
+
+(defpackage :ros.script.4-2.ros.3715264623
+  (:use :cl)
+  (:shadowing-import-from :sicp4.repl))
+
+(in-package :ros.script.4-2.ros.3715264623)
+
+(defvar *script-str* "
+ (define (factorial n)
+   (if (call = n 1)
+       1
+       (call * (call factorial (call - n 1)) n)))
+ (call factorial 5)
+")
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setq printv:*printv-output* *standard-output*)
+  (printv:printv
+   "(a.) ans: 特殊形式の define,set! を普通な関数として評価してしまい.
+    そのような関数(define,set!)がこの評価系で定義されていないエラーとなる.
+    また,代わりに関数として,define,set!を事前に関数として定義する場合は,
+    関数の引数を先に評価するため,代入前の変数を評価してしまいエラーとなる."
+
+   "(b.) ans: ↓call version"
+   (with-input-from-string (s1 *script-str*)
+     (sicp4.repl:driver-loop s1))))
+;;; vim: set ft=lisp lisp:
