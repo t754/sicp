@@ -20,6 +20,11 @@ exec ros -Q -- $0 "$@"
         (list 'cons #'cons)
         (list 'null? #'null)
         (list 'print #'print)
+        (list '+ #'+)
+        (list '- #'-)
+        (list '* #'*)
+        (list '/ #'/)
+        (list '= #'=)
         ))
 
 (defun set-car! (li x)

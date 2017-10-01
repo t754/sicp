@@ -18,10 +18,10 @@ exec ros -Q -- $0 "$@"
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
 
-        ((application? exp)                              ;add
-         (let ((exp (cdr exp)))                          ;
-           (apply (eval (operator exp) env)              ;
-                  (list-of-values (operands exp) env)))) ;
+        ((application? exp)                             ;add
+         (let ((ex (operands exp)))                     ;
+           (apply (eval (operator ex) env)              ;
+                  (list-of-values (operands ex) env)))) ;
 
         ((assignment? exp) (eval-assignment exp env))
         ((definition? exp) (eval-definition exp env))
@@ -56,7 +56,6 @@ exec ros -Q -- $0 "$@"
        (call * (call factorial (call - n 1)) n)))
  (call factorial 5)
 ")
-
 
 (defun main (&rest argv)
   (declare (ignorable argv))
