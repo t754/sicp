@@ -225,7 +225,8 @@ exec ros -Q -- $0 "$@"
 (defun cond-clauses (exp) (cdr exp))
 
 (defun cond-else-clause? (clause)
-  (eq (cond-predicate clause) 'else))
+  (when (symbolp (cond-predicate clause))
+   (string= (cond-predicate clause) 'else)))
 
 (defun cond-predicate (clause) (car clause))
 
