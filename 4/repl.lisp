@@ -29,6 +29,10 @@ exec ros -Q -- $0 "$@"
         (list 'assoc #'assoc)
         ))
 
+(defun -eq (exp tag)
+  (when (symbolp exp)
+    (string= exp tag)))
+
 (defun set-car! (li x)
   (setf (car li) x))
 (defun set-cdr! (li x)
@@ -43,7 +47,7 @@ exec ros -Q -- $0 "$@"
 
 (defun tagged-list? (exp tag)
   (if (consp exp)
-      (string= (car exp) tag)
+      (-eq (car exp) tag)
       nil))
 
 (defun quoted?(exp)
@@ -227,8 +231,7 @@ exec ros -Q -- $0 "$@"
 (defun cond-clauses (exp) (cdr exp))
 
 (defun cond-else-clause? (clause)
-  (when (symbolp (cond-predicate clause))
-   (string= (cond-predicate clause) 'else)))
+  (-eq (cond-predicate clause) 'else))
 
 (defun cond-predicate (clause) (car clause))
 
@@ -269,7 +272,7 @@ exec ros -Q -- $0 "$@"
              (labels ((scan (vars vals)
                         (cond ((null vars)
                                (env-loop (enclosing-environment env)))
-                              ((string= var (car vars))
+                              ((-eq var (car vars))
                                (car vals))
                               (t (scan (cdr vars) (cdr vals))))))
                (if (eq env *the-empty-environment*)
