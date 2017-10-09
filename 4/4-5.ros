@@ -1,0 +1,54 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  (load "./repl.lisp")
+  )
+
+(in-package :sicp4.repl)
+
+(defun cond-=>-clause?(clause)
+  (let ((act (car (cond-actions clause))))
+    (when (symbolp act)
+      (string= act '=>))))
+
+(defun cond-clause->exp (clause)
+  (if (cond-=>-clause? clause)
+      (cons (cadr (cond-actions clause)) (list (cond-predicate clause)))
+      (sequence->exp (cond-actions clause))))
+
+(defun expand-clauses (clauses)
+  (if (null clauses)
+      'false                          ; else節なし
+      (let ((first (car clauses))
+            (rest (cdr clauses)))
+        (if (cond-else-clause? first)
+            (if (null rest)
+                (cond-clause->exp first)
+                (error "ELSE clause isn't last -- COND->IF ~S"
+                       clauses))
+            (make-if (cond-predicate first)
+                     (cond-clause->exp first)
+                     (expand-clauses rest))))))
+
+
+
+(defpackage :ros.script.4-5.3716551175
+  (:use :cl))
+(in-package :ros.script.4-5.3716551175)
+(defvar *script-str* "
+ (cond ((assoc 'b '((a 1) (b 2))) => cadr)
+       (else false))
+ (cond ((= 1 2) '3)
+       ((= 4 5) '6)
+       (else '7))
+")
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *script-str*)
+    (sicp4.repl:driver-loop s1)))
+;;; vim: set ft=lisp lisp:
