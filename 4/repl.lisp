@@ -17,6 +17,7 @@ exec ros -Q -- $0 "$@"
 (defvar *primitive-procedures*
   (list (list 'car #'car)
         (list 'cdr #'cdr)
+        (list 'cadr #'cadr) (list 'caar #'caar) (list 'cddr #'cadr)
         (list 'cons #'cons)
         (list 'null? #'null)
         (list 'print #'print)
@@ -25,6 +26,7 @@ exec ros -Q -- $0 "$@"
         (list '* #'*)
         (list '/ #'/)
         (list '= #'=)
+        (list 'assoc #'assoc)
         ))
 
 (defun set-car! (li x)
