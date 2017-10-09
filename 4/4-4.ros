@@ -1,0 +1,94 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  #+quicklisp (ql:quickload '(swank printv) :silent t)
+  (load "./repl.lisp")
+  )
+
+(in-package :sicp4.repl)
+
+(defun and? (exp)
+  (tagged-list? exp 'and))
+
+(defun or? (exp)
+  (tagged-list? exp 'or))
+
+(defun eval-and (exp env)
+  (labels ((-and (ex en)
+             (if (null ex)
+                 t
+                 (if (false? (eval (car ex) en))
+                     nil
+                     (-and (cdr ex) en)))))
+    (-and (operands exp) env)))
+
+(defun eval-or (exp env)
+  (labels ((-or (ex en)
+             (if (null ex)
+                 nil
+                 (if (true? (eval (car ex) en))
+                     t
+                     (-or (cdr ex) en)))))
+    (-or (operands exp) env)))
+
+(defun eval (exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((and? exp) (eval-and exp env)) ;; add
+        ((or? exp) (eval-or exp env))   ;; add
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
+        ((begin? exp)
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
+        ((application? exp)
+         (apply (eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (t
+         (error "Unknown expression type -- EVAL ~S" exp))))
+
+
+(defpackage :ros.script.4-4.3715849241
+  (:use :cl))
+(in-package :ros.script.4-4.3715849241)
+
+(defvar *script-str* "
+ (and true true)
+ (and false false)
+ (and true false)
+ (and false true)
+ (and)
+ (and (= 1 (print 1))
+      (= 1 (print 2))
+      (= 1 (print 3)))
+
+ (and (= 9 (print 10))
+      (= 9 (print 9)))
+
+ (or true true)
+ (or false false)
+ (or true false)
+ (or false true)
+ (or)
+ (or (= 1 (print 1))
+     (= 1 (print 2))
+     (= 1 (print 3)))
+ (or (= 9 (print 10))
+     (= 9 (print 9)))
+")
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *script-str*)
+    (sicp4.repl:driver-loop s1)))
+;;; vim: set ft=lisp lisp:
