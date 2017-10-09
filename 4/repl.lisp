@@ -3,8 +3,11 @@
 exec ros -Q -- $0 "$@"
 |#
 (in-package :cl-user)
+
+(ql:quickload '(cl-ansi-text))
+
 (defpackage :sicp4.repl
-  (:use :cl)
+  (:use :cl :cl-ansi-text)
   (:shadow :eval :apply)
   (:export
    :*the-global-environment*
@@ -336,32 +339,38 @@ exec ros -Q -- $0 "$@"
                          :fill-pointer 0
                          :adjustable t)))
       (with-output-to-string (sb s)
-        (format sb "~&>>>:")
-        (labels ((iter (i)
-                   (when (< i len)
-                     (let ((ch (char str i)))
-                       (format sb "~c" ch)
-                       (when (char= ch #\newline)
-                         (format sb "~&>>>>:"))
-                       (iter (1+ i))))))
-          (iter 0))
-        (format t "~%~s~%" s)))))
-
+        (flet ((print->> ()
+                 (format sb "~&~a>>>>:~a"
+                         (CL-ANSI-TEXT:MAKE-COLOR-STRING #x666666 :EFFECT :UNSET :STYLE
+                                                                          :FOREGROUND)
+                         (CL-ANSI-TEXT:MAKE-COLOR-STRING #xFF8888 :EFFECT :UNSET :STYLE
+                                                                          :FOREGROUND))))
+          (labels ((iter (i)
+                     (when (< i len)
+                       (let ((ch (char str i)))
+                         (format sb "~c" ch)
+                         (when (char= ch #\newline)
+                           (print->>))
+                         (iter (1+ i))))))
+            (print->>)
+            (iter 0)))
+        (format t "~&~a~a~%" s cl-ansi-text:+reset-color-string+)))))
 
 
 (defun prompt-for-input (string)
-  (format t "~%~%~s~%" string))
+  (format t "~%~a~a~a~%"  (make-color-string :yellow) string +RESET-COLOR-STRING+))
 
 (defun announce-output (string)
-  (format t "~%~s~%" string))
+  (format t "~&~a~a~a~%"  (make-color-string :blue) string +RESET-COLOR-STRING+))
 
 (defun user-print (object)
-  (if (compound-procedure? object)
-      (print (list 'compound-procedure
-                   (procedure-parameters object)
-                   (procedure-body object)
-                   '()))
-      (print object)))
+  (cl-ansi-text:with-color (:green)
+    (if (compound-procedure? object)
+        (format t "~a" (list 'compound-procedure
+                             (procedure-parameters object)
+                             (procedure-body object)
+                             '()))
+        (format t "~a" object))))
 
 (defvar *the-global-environment* (setup-environment))
 
