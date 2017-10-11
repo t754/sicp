@@ -13,15 +13,17 @@ exec ros -Q -- $0 "$@"
 
 (defun application? (exp) (tagged-list? exp 'call))
 
+(defun operator (exp) (cadr exp))
+(defun operands (exp) (cddr exp))
+
 (defun eval (exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
 
         ((application? exp)                             ;add
-         (let ((ex (operands exp)))                     ;
-           (apply (eval (operator ex) env)              ;
-                  (list-of-values (operands ex) env)))) ;
+           (apply (eval (operator exp) env)             ;
+                  (list-of-values (operands exp) env))) ;
 
         ((assignment? exp) (eval-assignment exp env))
         ((definition? exp) (eval-definition exp env))
