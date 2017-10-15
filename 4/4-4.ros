@@ -18,23 +18,51 @@ exec ros -Q -- $0 "$@"
   (tagged-list? exp 'or))
 
 (defun eval-and (exp env)
-  (labels ((-and (ex en)
+  (labels ((-and (ex en prev)
              (if (null ex)
-                 t
-                 (if (false? (eval (car ex) en))
-                     nil
-                     (-and (cdr ex) en)))))
-    (-and (operands exp) env)))
+                 prev
+                 (let ((tmp (eval (car ex) en)))
+                   (if (false? tmp)
+                       nil
+                       (-and (cdr ex) en tmp))))))
+    (-and (operands exp) env nil)))
+
+
+(defun make-and (exp)
+  (labels ((-make-and (ex)
+             (if (null ex)
+                 'true
+                 (if (null (caddr ex))
+                     (make-if (car ex)
+                              (cadr ex)
+                              'false)
+                     (make-if (car ex)
+                              (-make-and (cdr ex))
+                              'false)))))
+    (-make-and (cdr exp))))
 
 (defun eval-or (exp env)
   (labels ((-or (ex en)
              (if (null ex)
                  nil
-                 (if (true? (eval (car ex) en))
-                     t
-                     (-or (cdr ex) en)))))
+                 (let ((tmp (eval (car ex) en)))
+                   (if (true? tmp)
+                       tmp
+                       (-or (cdr ex) en))))))
     (-or (operands exp) env)))
 
+(defun make-or(exp)
+  (labels ((-make-or (ex)
+             (if (null ex)
+                 'false
+                 (list (list 'lambda '(var)
+                               (make-if 'var 'var
+                                        (if (null (cddr ex))
+                                            (cadr ex)
+                                            (-make-or (cdr ex)))))
+                         (car ex)))))
+    (-make-or (cdr exp))))
+;; (eval-or exp env)
 (defun eval (exp env)
   (cond ((self-evaluating? exp) exp)
         ((and? exp) (eval-and exp env)) ;; add
@@ -62,33 +90,47 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.4-4.3715849241)
 
-(defvar *script-str* "
- (and true true)
+(defvar *script-str* '(
+"
+ (and 1 2)
  (and false false)
- (and true false)
- (and false true)
+ (and 1 false)
+ (and false 2)
  (and)
  (and (= 1 (print 1))
-      (= 1 (print 2))
-      (= 1 (print 3)))
-
+      (= 1 (print 2)))
  (and (= 9 (print 10))
       (= 9 (print 9)))
-
+"
+"
+ (or false false 1)
+ (or 8 1)
  (or true true)
  (or false false)
  (or true false)
  (or false true)
  (or)
  (or (= 1 (print 1))
-     (= 1 (print 2))
-     (= 1 (print 3)))
+     (= 1 (print 2)))
  (or (= 9 (print 10))
      (= 9 (print 9)))
-")
+"))
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (with-input-from-string (s1 *script-str*)
-    (sicp4.repl:driver-loop s1)))
+
+  (dolist (str *script-str*)
+    (with-input-from-string (s1 str)
+      (sicp4.repl:driver-loop s1)))
+
+  (print "=========================")
+  (print "↓derived expressions (macro)version")
+
+  (defun sicp4.repl::eval-and (exp env)
+    (sicp4.repl::eval (sicp4.repl::make-and exp) env))
+  (defun sicp4.repl::eval-or (exp env)
+    (sicp4.repl::eval (sicp4.repl::make-or exp) env))
+  (dolist (str *script-str*)
+    (with-input-from-string (s1 str)
+      (sicp4.repl:driver-loop s1))))
 ;;; vim: set ft=lisp lisp:
