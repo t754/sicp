@@ -15,11 +15,12 @@ exec ros -Q -- $0 "$@"
 
 (defun let->combination (exp)
   (flet ((-vars (ex)
-           (mapcar 'car (cadr exp)))
+           (mapcar 'car (cadr ex)))
          (-exps (ex)
-           (mapcar 'cadr (cadr exp))))
-    (cons (list 'lambda (-vars exp)
-                (cons 'begin (cddr exp)))
+           (mapcar 'cadr (cadr ex))))
+    (cons (cons 'lambda
+                (cons (-vars exp)
+                      (cddr exp)))
           (-exps exp))))
 
 

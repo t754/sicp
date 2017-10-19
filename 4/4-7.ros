@@ -19,9 +19,11 @@ exec ros -Q -- $0 "$@"
            (mapcar 'car (cadr ex)))
          (-exps (ex)
            (mapcar 'cadr (cadr ex))))
-    (cons (list 'lambda (-vars exp)
-                (cons 'begin (cddr exp)))
+    (cons (cons 'lambda
+                (cons (-vars exp)
+                      (cddr exp)))
           (-exps exp))))
+
 
 
 (defun let*? (exp)
