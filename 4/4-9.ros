@@ -47,6 +47,37 @@ exec ros -Q -- $0 "$@"
                    (while-iter))))
     (while-iter)))
 
+(defun do? (exp)
+  (tagged-list? exp 'do))
+
+;; common lisp do
+;;(do ((VAR INIT [STEP])) (END-TEST [RESULT...]) BODY...)
+(defun do->exp (exp)
+  (--do->exp (nth 1 exp)
+             (nth 2 exp)
+             (cdddr exp)))
+
+(defun --do->exp (steps endtest body )
+  `(begin
+     (let ,(mapcar (lambda (c)
+                     (if (consp c) (list (car c) (nth 1 c)) c))
+            steps)
+       (while (not ,(car endtest))
+              ,@body
+              ,@(let ((sets (mapcar (lambda (c)
+                                      (and (consp c)
+                                           (cddr c)
+                                           (list (car c) (nth 2 c))))
+                                    steps)))
+
+                  (if (null sets)
+                      '(nil)
+                      (mapcar (lambda (x) `(set! ,(car x) ,(cadr x))) sets))))
+       ,@(or (cdr endtest) '(nil)))))
+
+
+
+
 (defun eval (exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
@@ -63,6 +94,7 @@ exec ros -Q -- $0 "$@"
         ((cond? exp) (eval (cond->if exp) env))
         ((let? exp) (eval (let->combination exp) env))
         ((while? exp) (eval (while->exp exp) env)) ;; add
+        ((do? exp) (eval (do->exp exp) env)) ;; add
         ((application? exp)
          (apply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -81,6 +113,13 @@ exec ros -Q -- $0 "$@"
          (print i)
          (set! i (+ i 1)))
   i)
+
+(do ((n 1 (+ 1 n))
+     (m 10.0 (/ m 2))
+     (li '10 (list '/ li 2)))
+    ((> n 10) (list n m li))
+  (print n)
+  (print m))
 ")
 
 (defun main (&rest argv)
