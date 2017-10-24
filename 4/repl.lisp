@@ -29,6 +29,8 @@ exec ros -Q -- $0 "$@"
         (list '* #'*)
         (list '/ #'/)
         (list '= #'=)
+        (list '< #'<)
+        (list '> #'>)
         (list 'assoc #'assoc)
         ))
 
