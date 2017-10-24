@@ -32,6 +32,8 @@ exec ros -Q -- $0 "$@"
         (list '< #'<)
         (list '> #'>)
         (list 'assoc #'assoc)
+        (list 'list #'list)
+        (list 'not #'not)
         ))
 
 (defun -eq (exp tag)
