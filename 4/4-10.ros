@@ -1,0 +1,54 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp (ql:quickload '() :silent t)
+  (load "./repl.lisp")
+  )
+
+(in-package :sicp4.repl)
+
+(defun next-assighment-exps (exp)
+  (cddr exp))
+
+
+(defun assignment-variable (exp) (car exp))
+(defun assignment-value (exp) (cadr exp))
+
+
+;; multi set
+;; (set! var1 value1 var2 value2 ..)
+(defun eval-assignment (exp env)
+  (labels ((iter (ex)
+             (cond ((null ex) 'ok)
+                   (t
+                    (set-variable-value! (assignment-variable ex)
+                                         (eval (assignment-value ex) env)
+                                         env)
+                    (iter (next-assighment-exps ex))))))
+
+    (iter (cdr exp))))
+
+
+(defpackage :ros.script.4-10.3717858343
+  (:use :cl))
+(in-package :ros.script.4-10.3717858343)
+
+
+(defvar *str* "
+((lambda (a b c)
+   (print (list a b c))
+   (set! a 1
+         b 2
+         c (list 'a 'b))
+   (print (list a b c)))
+ 'false 'false 'false)
+")
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *str*)
+    (sicp4.repl:driver-loop s1)))
+;;; vim: set ft=lisp lisp:
