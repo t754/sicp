@@ -9,45 +9,40 @@ exec ros -Q -- $0 "$@"
   )
 (in-package :sicp4.repl)
 
-(defun env-scan (var val env func func2 error-func)
-  (labels ((scan (vars vals)
-             (cond ((null vars)
-                    (funcall func var val env))
-                   ((-eq var (car vars))
-                    (funcall func2  val vals))
-                   (t (scan (cdr vars) (cdr vals))))))
-    (if (eq env *the-empty-environment*)
-        (funcall error-func var)
-        (let ((frame (first-frame env)))
-          (scan (frame-variables frame)
-                (frame-values frame))))))
+(defun env-iter (var env func)
+  (if (eq *the-empty-environment* env)
+      nil
+      (let ((frame (first-frame env)))
+        (let ((po (position-if (lambda (x) (-eq x var)) (frame-variables frame))))
+          (funcall func (and (numberp po)
+                             (nthcdr po (frame-values frame))))))))
 
 
 (defun lookup-variable-value (var env)
-  (env-scan var nil env
-            (lambda (vr vl ev)
-              (lookup-variable-value var (enclosing-environment env)))
-            (lambda (vl vls)
-              (car vls))
-            (lambda (vr)
-              (error "Unbound variable ~S" vr))))
+  (let ((result (env-iter var env
+                          (lambda (vls)
+                            (if (null vls)
+                                (lookup-variable-value var (enclosing-environment env))
+                                (car vls))))))
+    (if (null result)
+        (error "Unbound variable ~S" var)
+        result)))
 
 (defun set-variable-value! (var val env)
-  (env-scan var val env
-            (lambda (vr vl ev)
-              (set-variable-value! var val (enclosing-environment env)))
-            (lambda (vl vls)
-              (set-car! vls vl))
-            (lambda (vr)
-              (error "Unbound variable -- SET! ~S" vr))))
+  (and (null (env-iter var env
+                       (lambda (vls)
+                         (if (null vls)
+                             (set-variable-value! var val (enclosing-environment env))
+                             (set-car! vls val)))))
+       (error "Unbound variable -- SET! ~S" var)))
+
 
 (defun define-variable! (var val env)
-  (env-scan var val env
-            (lambda (vr vl ev)
-              (add-binding-to-frame! var val (first-frame ev)))
-            (lambda (vl vls)
-              (set-car! vls vl))
-            nil))
+  (env-iter var env
+            (lambda (vls)
+              (if (null vls)
+                  (add-binding-to-frame! var val (first-frame env))
+                  (set-car! vls val)))))
 
 
 
@@ -84,5 +79,4 @@ exec ros -Q -- $0 "$@"
   (declare (ignorable argv))
   (with-input-from-string (s1 *str*)
     (sicp4.repl:driver-loop s1)))
-
 ;;; vim: set ft=lisp lisp:
