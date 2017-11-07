@@ -1,0 +1,88 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  (load "./repl.lisp")
+  )
+(in-package :sicp4.repl)
+
+(defun env-scan (var val env func func2 error-func)
+  (labels ((scan (vars vals)
+             (cond ((null vars)
+                    (funcall func var val env))
+                   ((-eq var (car vars))
+                    (funcall func2  val vals))
+                   (t (scan (cdr vars) (cdr vals))))))
+    (if (eq env *the-empty-environment*)
+        (funcall error-func var)
+        (let ((frame (first-frame env)))
+          (scan (frame-variables frame)
+                (frame-values frame))))))
+
+
+(defun lookup-variable-value (var env)
+  (env-scan var nil env
+            (lambda (vr vl ev)
+              (lookup-variable-value var (enclosing-environment env)))
+            (lambda (vl vls)
+              (car vls))
+            (lambda (vr)
+              (error "Unbound variable ~S" vr))))
+
+(defun set-variable-value! (var val env)
+  (env-scan var val env
+            (lambda (vr vl ev)
+              (set-variable-value! var val (enclosing-environment env)))
+            (lambda (vl vls)
+              (set-car! vls vl))
+            (lambda (vr)
+              (error "Unbound variable -- SET! ~S" vr))))
+
+(defun define-variable! (var val env)
+  (env-scan var val env
+            (lambda (vr vl ev)
+              (add-binding-to-frame! var val (first-frame ev)))
+            (lambda (vl vls)
+              (set-car! vls vl))
+            nil))
+
+
+
+(defpackage :ros.script.4-12.3719059193
+  (:use :cl))
+(in-package :ros.script.4-12.3719059193)
+
+(defvar *str* "
+(define (outer-func n)
+    (define (inner-func n)
+        (print \"inner-func-arg\")
+      (print n)
+      (print \"inner-set!\")
+      (set! n 'a)
+      (print n))
+
+  (inner-func (+ n 10))
+
+  (print \"outer-func-arg\")
+  (print n)
+
+  (print \"outer-set!\")
+  (set! n 'b)
+  (print n))
+(outer-func 0)
+(define a 1)
+(+ a 3)
+(set! a 4)
+(list a)
+")
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *str*)
+    (sicp4.repl:driver-loop s1)))
+
+;;; vim: set ft=lisp lisp:
