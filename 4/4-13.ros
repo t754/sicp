@@ -1,0 +1,75 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  (load "./repl.lisp")
+  )
+(in-package :sicp4.repl)
+
+
+(defun undefinition? (exp)
+  (tagged-list? exp 'unbind!))
+
+;; unbind from current frame
+(defun unbind (var env)
+  (let ((frame (first-frame env)))
+    (labels ((scan (vars vals)
+               (cond ((null vars)
+                      (error "Unbound variable -- UNBIND! ~S" var))
+                     ((-eq var (car vars))
+                      (set-car! vars (cadr vars))
+                      (set-cdr! vars (cddr vars))
+                      (set-car! vals (cadr vals))
+                      (set-cdr! vals (cddr vals)))
+                     (t (scan (cdr vars) (cdr vals))))))
+      (scan (frame-variables frame)
+            (frame-values frame)))))
+
+(defun eval-undefinition (exp env)
+  (unbind (definition-variable exp) env)
+  'ok)
+
+
+(defun eval (exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((undefinition? exp) (eval-undefinition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp)
+         (make-procedure (lambda-parameters exp)
+                         (lambda-body exp)
+                         env))
+        ((begin? exp)
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
+        ((application? exp)
+         (apply (eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (t
+         (error "Unknown expression type -- EVAL ~S" exp))))
+
+(defpackage :ros.script.4-13.3719062051
+  (:use :cl))
+(in-package :ros.script.4-13.3719062051)
+
+(defvar *str* "
+(define a 1)
+(define b 2)
+(list a)
+(unbind! a)
+(+ b 1)
+(list a)
+")
+
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *str*)
+    (sicp4.repl:driver-loop s1)))
+;;; vim: set ft=lisp lisp:
