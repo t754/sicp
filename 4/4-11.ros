@@ -1,0 +1,87 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp (ql:quickload '() :silent t)
+  (load "./repl.lisp")
+  )
+(in-package :sicp4.repl)
+
+
+(defun lookup-variable-value (var -env)
+  (labels ((env-loop (env)
+             (labels ((scan (var-vals)
+                        (cond ((null var-vals)
+                               (env-loop (enclosing-environment env)))
+                              ((-eq var (caar var-vals))
+                               (cdar var-vals))
+                              (t (scan (cdr var-vals))))))
+               (if (eq env *the-empty-environment*)
+                   (error "Unbound variable ~S" var)
+                   (let ((frame (first-frame env)))
+                     (scan frame))))))
+    (env-loop -env)))
+
+(defun set-variable-value! (var val -env)
+  (labels ((env-loop (env)
+             (labels ((scan (var-vals)
+                        (cond ((null var-vals)
+                               (env-loop (enclosing-environment env)))
+                              ((eq var (caar var-vals))
+                               (setf (cdar var-vals) val))
+                              (t (scan (cdr var-vals))))))
+               (if (eq env *the-empty-environment*)
+                   (error "Unbound variable -- SET! ~S" var)
+                   (let ((frame (first-frame env)))
+                     (scan  frame))))))
+    (env-loop -env)))
+
+(defun add-binding-to-frame! (var val frame)
+  (set-cdr! frame
+            (cdr (append frame (list (cons var val))))))
+
+
+(defun define-variable! (var val -env)
+  (let ((frame (first-frame -env)))
+    (labels ((scan (var-vals)
+               (progn (setf *print-circle* t)
+                      (setf *print-circle* nil))
+               (cond ((null var-vals)
+                      (add-binding-to-frame! var val frame))
+                     ((eq var (caar var-vals))
+                      (setf (cdar var-vals) val))
+                     (t (scan (cdr var-vals))))))
+      (scan frame))))
+
+
+(defun make-frame (variables values)
+  (mapcar #'cons variables values))
+
+
+(setf *the-global-environment* (setup-environment))
+
+(defpackage :ros.script.4-11.3718790626
+  (:use :cl))
+(in-package :ros.script.4-11.3718790626)
+
+(defvar *str* "
+(define (func n)
+    (define (in-func a)
+        (set! a (+ 1 a))
+      (print a)
+      0)
+  (+ 100
+     (in-func (+ n 10))))
+(func 42)
+")
+
+
+;; フレームをリストの対で表現する代りに, 各束縛が名前-値の対であるような束縛のリストでフレームを表現することが出来る. この表現を使うように環境演算を書き直せ.
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (with-input-from-string (s1 *str*)
+    (sicp4.repl:driver-loop s1)))
+;;; vim: set ft=lisp lisp:
